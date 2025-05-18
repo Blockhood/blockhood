@@ -1,19 +1,21 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { useParams, useRouter } from "next/navigation"
-import { useAuth } from "@/components/auth-provider"
-import AuthDialog from "@/components/auth-dialog"
-import { useTheme } from "next-themes"
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth-provider";
+import AuthDialog from "@/components/auth-dialog";
+import { useTheme } from "next-themes";
+import Loading from "@/app/loading";
 
 // Mock data for events
 const eventsData = [
   {
     id: "1",
     title: "Web3 Beginners Workshop",
-    description: "Join us for a hands-on workshop designed to introduce beginners to the world of Web3.",
+    description:
+      "Join us for a hands-on workshop designed to introduce beginners to the world of Web3.",
     longDescription: `
       <p>Are you curious about Web3 but don't know where to start? This workshop is designed specifically for beginners who want to understand the fundamentals of Web3 technologies and how they're reshaping the internet.</p>
       
@@ -79,7 +81,8 @@ const eventsData = [
   {
     id: "2",
     title: "DeFi Deep Dive",
-    description: "Explore the world of decentralized finance with experts in the field.",
+    description:
+      "Explore the world of decentralized finance with experts in the field.",
     longDescription: `<p>Detailed description of the DeFi Deep Dive event would go here...</p>`,
     image: "/placeholder.svg?height=600&width=1200",
     date: {
@@ -111,7 +114,8 @@ const eventsData = [
   {
     id: "3",
     title: "NFT Creation Masterclass",
-    description: "Learn how to create, mint, and sell your own NFTs in this comprehensive masterclass.",
+    description:
+      "Learn how to create, mint, and sell your own NFTs in this comprehensive masterclass.",
     longDescription: `<p>Detailed description of the NFT Creation Masterclass would go here...</p>`,
     image: "/placeholder.svg?height=600&width=1200",
     date: {
@@ -140,82 +144,83 @@ const eventsData = [
     tags: ["nft", "art", "creation", "masterclass"],
     relatedEvents: [1, 2],
   },
-]
+];
 
 export default function EventPage() {
-  const params = useParams()
-  const router = useRouter()
-  const { user } = useAuth()
-  const [event, setEvent] = useState<any>(null)
-  const [relatedEvents, setRelatedEvents] = useState<any[]>([])
-  const [showAuthDialog, setShowAuthDialog] = useState(false)
-  const [isRegistered, setIsRegistered] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const { theme } = useTheme()
+  const params = useParams();
+  const router = useRouter();
+  const { user } = useAuth();
+  const [event, setEvent] = useState<any>(null);
+  const [relatedEvents, setRelatedEvents] = useState<any[]>([]);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { theme } = useTheme();
 
   useEffect(() => {
     // Simulate loading data
-    setIsLoading(true)
+    setIsLoading(true);
 
     setTimeout(() => {
-      const foundEvent = eventsData.find((e) => e.id === params.id)
+      const foundEvent = eventsData.find((e) => e.id === params.id);
 
       if (foundEvent) {
-        setEvent(foundEvent)
+        setEvent(foundEvent);
 
         // Get related events
         if (foundEvent.relatedEvents && foundEvent.relatedEvents.length > 0) {
-          const related = eventsData.filter((e) => foundEvent.relatedEvents.includes(Number.parseInt(e.id))).slice(0, 2)
-          setRelatedEvents(related)
+          const related = eventsData
+            .filter((e) =>
+              foundEvent.relatedEvents.includes(Number.parseInt(e.id))
+            )
+            .slice(0, 2);
+          setRelatedEvents(related);
         }
       } else {
         // Event not found, redirect to events list
-        router.push("/events")
+        router.push("/events");
       }
 
-      setIsLoading(false)
-    }, 500)
-  }, [params.id, router])
+      setIsLoading(false);
+    }, 500);
+  }, [params.id, router]);
 
   const handleRegister = () => {
     if (!user) {
-      setShowAuthDialog(true)
-      return
+      setShowAuthDialog(true);
+      return;
     }
 
-    setIsRegistered(!isRegistered)
-    // In a real app, you would register the user for the event
-  }
+    setIsRegistered(!isRegistered);
+  };
 
   const formatDate = (date: any) => {
-    return `${date.month} ${date.day}, ${date.year}`
-  }
+    return `${date.month} ${date.day}, ${date.year}`;
+  };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
-          <p className="text-gray-500">Loading event details...</p>
-        </div>
-      </div>
-    )
+    return <Loading />;
   }
 
-  if (!event) return null
+  if (!event) return null;
 
   return (
     <main>
       <div className="bg-gradient-to-b from-darker to-dark py-20">
         <div className="container max-w-4xl mx-auto px-4">
           <div className="mb-6">
-            <Link href="/events" className="text-accent hover:underline flex items-center">
+            <Link
+              href="/events"
+              className="text-accent hover:underline flex items-center"
+            >
               <i className="fas fa-arrow-left mr-2"></i> Back to Events
             </Link>
           </div>
 
           <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">{event.title}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">
+              {event.title}
+            </h1>
 
             <div className="flex flex-wrap items-center text-sm text-gray-400 gap-4 mb-6">
               <div className="flex items-center">
@@ -234,7 +239,12 @@ export default function EventPage() {
 
             <div className="flex items-center">
               <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
-                <Image src={event.host.avatar || "/placeholder.svg"} alt={event.host.name} width={40} height={40} />
+                <Image
+                  src={event.host.avatar || "/placeholder.svg"}
+                  alt={event.host.name}
+                  width={40}
+                  height={40}
+                />
               </div>
               <div>
                 <div className="font-medium">Hosted by {event.host.name}</div>
@@ -270,7 +280,9 @@ export default function EventPage() {
                 <span
                   key={tag}
                   className={`px-3 py-1 rounded-full text-sm ${
-                    theme === "light" ? "bg-gray-200 text-gray-800" : "bg-gray-800 text-gray-200"
+                    theme === "light"
+                      ? "bg-gray-200 text-gray-800"
+                      : "bg-gray-800 text-gray-200"
                   }`}
                 >
                   #{tag}
@@ -278,7 +290,11 @@ export default function EventPage() {
               ))}
             </div>
 
-            <div className={`rounded-xl p-6 ${theme === "light" ? "bg-gray-100" : "bg-gray-800"}`}>
+            <div
+              className={`rounded-xl p-6 ${
+                theme === "light" ? "bg-gray-100" : "bg-gray-800"
+              }`}
+            >
               <h3 className="text-xl font-bold mb-4">Have Questions?</h3>
               {user ? (
                 <div>
@@ -291,12 +307,19 @@ export default function EventPage() {
                     }`}
                     rows={4}
                   ></textarea>
-                  <button className="cta-button cta-primary">Send Question</button>
+                  <button className="cta-button cta-primary">
+                    Send Question
+                  </button>
                 </div>
               ) : (
                 <div className="text-center py-6">
-                  <p className="mb-4">Sign in to ask questions about this event</p>
-                  <button onClick={() => setShowAuthDialog(true)} className="cta-button cta-primary">
+                  <p className="mb-4">
+                    Sign in to ask questions about this event
+                  </p>
+                  <button
+                    onClick={() => setShowAuthDialog(true)}
+                    className="cta-button cta-primary"
+                  >
                     Sign In
                   </button>
                 </div>
@@ -307,18 +330,27 @@ export default function EventPage() {
           <div className="md:col-span-1">
             <div
               className={`sticky top-24 rounded-xl border p-6 ${
-                theme === "light" ? "bg-white border-gray-200 shadow-sm" : "bg-gray-800 border-gray-700"
+                theme === "light"
+                  ? "bg-white border-gray-200 shadow-sm"
+                  : "bg-gray-800 border-gray-700"
               }`}
             >
               <div className="mb-6">
                 <div className="text-2xl font-bold mb-1">{event.price}</div>
-                <div className={`text-sm ${theme === "light" ? "text-gray-600" : "text-gray-300"}`}>
-                  {event.attendees} attending · {event.maxAttendees - event.attendees} spots left
+                <div
+                  className={`text-sm ${
+                    theme === "light" ? "text-gray-600" : "text-gray-300"
+                  }`}
+                >
+                  {event.attendees} attending ·{" "}
+                  {event.maxAttendees - event.attendees} spots left
                 </div>
                 <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-primary"
-                    style={{ width: `${(event.attendees / event.maxAttendees) * 100}%` }}
+                    style={{
+                      width: `${(event.attendees / event.maxAttendees) * 100}%`,
+                    }}
                   ></div>
                 </div>
               </div>
@@ -326,7 +358,9 @@ export default function EventPage() {
               <button
                 onClick={handleRegister}
                 className={`w-full py-3 px-4 rounded-lg font-medium mb-4 ${
-                  isRegistered ? "bg-green-600 hover:bg-green-700 text-white" : "bg-primary hover:bg-hover text-white"
+                  isRegistered
+                    ? "bg-green-600 hover:bg-green-700 text-white"
+                    : "bg-primary hover:bg-hover text-white"
                 } transition-colors`}
               >
                 {isRegistered ? "Registered" : "Register for Event"}
@@ -343,7 +377,9 @@ export default function EventPage() {
                   </div>
                   <div>
                     <div className="font-medium">Date and Time</div>
-                    <div className="text-sm text-gray-500">{formatDate(event.date)}</div>
+                    <div className="text-sm text-gray-500">
+                      {formatDate(event.date)}
+                    </div>
                     <div className="text-sm text-gray-500">
                       {event.time} ({event.timezone})
                     </div>
@@ -356,13 +392,20 @@ export default function EventPage() {
                   </div>
                   <div>
                     <div className="font-medium">Location</div>
-                    <div className="text-sm text-gray-500">{event.location}</div>
+                    <div className="text-sm text-gray-500">
+                      {event.location}
+                    </div>
                     {event.locationDetails.type === "virtual" && (
-                      <div className="text-sm text-gray-500">Platform: {event.locationDetails.platform}</div>
+                      <div className="text-sm text-gray-500">
+                        Platform: {event.locationDetails.platform}
+                      </div>
                     )}
                     {isRegistered && (
                       <div className="mt-2">
-                        <a href="#" className="text-accent hover:underline text-sm">
+                        <a
+                          href="#"
+                          className="text-accent hover:underline text-sm"
+                        >
                           View access details
                         </a>
                       </div>
@@ -376,7 +419,9 @@ export default function EventPage() {
                   </div>
                   <div>
                     <div className="font-medium">Host</div>
-                    <div className="text-sm text-gray-500">{event.host.name}</div>
+                    <div className="text-sm text-gray-500">
+                      {event.host.name}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -398,7 +443,9 @@ export default function EventPage() {
                 <div
                   key={relatedEvent.id}
                   className={`rounded-xl overflow-hidden border ${
-                    theme === "light" ? "bg-white border-gray-200" : "bg-gray-800 border-gray-700"
+                    theme === "light"
+                      ? "bg-white border-gray-200"
+                      : "bg-gray-800 border-gray-700"
                   }`}
                 >
                   <div className="h-40 overflow-hidden relative">
@@ -415,12 +462,18 @@ export default function EventPage() {
                   </div>
                   <div className="p-4">
                     <h4 className="font-bold mb-2">{relatedEvent.title}</h4>
-                    <p className="text-sm text-gray-400 mb-3">{relatedEvent.description}</p>
+                    <p className="text-sm text-gray-400 mb-3">
+                      {relatedEvent.description}
+                    </p>
                     <div className="flex justify-between items-center">
                       <div className="text-sm">
-                        <i className="far fa-clock mr-1"></i> {relatedEvent.time}
+                        <i className="far fa-clock mr-1"></i>{" "}
+                        {relatedEvent.time}
                       </div>
-                      <Link href={`/events/${relatedEvent.id}`} className="text-accent hover:underline text-sm">
+                      <Link
+                        href={`/events/${relatedEvent.id}`}
+                        className="text-accent hover:underline text-sm"
+                      >
                         View Event
                       </Link>
                     </div>
@@ -432,7 +485,9 @@ export default function EventPage() {
         )}
       </div>
 
-      {showAuthDialog && <AuthDialog onClose={() => setShowAuthDialog(false)} />}
+      {showAuthDialog && (
+        <AuthDialog onClose={() => setShowAuthDialog(false)} />
+      )}
     </main>
-  )
+  );
 }

@@ -1,51 +1,51 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import Hero from "@/components/hero"
-import Features from "@/components/features"
-import Team from "@/components/team"
-import Partners from "@/components/partners"
-import Community from "@/components/community"
+import { useEffect, useState } from "react";
+import Hero from "@/components/hero";
+import Features from "@/components/features";
+import Team from "@/components/team";
+import Partners from "@/components/partners";
+import Community from "@/components/community";
 
 export default function Home() {
   useEffect(() => {
     // Reveal elements on scroll
     function reveal() {
-      const reveals = document.querySelectorAll(".reveal")
+      const reveals = document.querySelectorAll(".reveal");
 
       for (let i = 0; i < reveals.length; i++) {
-        const windowHeight = window.innerHeight
-        const elementTop = reveals[i].getBoundingClientRect().top
-        const elementVisible = 150
+        const windowHeight = window.innerHeight;
+        const elementTop = reveals[i].getBoundingClientRect().top;
+        const elementVisible = 150;
 
         if (elementTop < windowHeight - elementVisible) {
-          reveals[i].classList.add("active")
+          reveals[i].classList.add("active");
         }
       }
     }
 
     // Trigger reveal on page load and scroll
-    window.addEventListener("load", reveal)
+    window.addEventListener("load", reveal);
     window.addEventListener("scroll", () => {
-      reveal()
+      reveal();
 
       // Header scroll effect
-      const header = document.getElementById("header")
+      const header = document.getElementById("header");
       if (window.scrollY > 50) {
-        header?.classList.add("scrolled")
+        header?.classList.add("scrolled");
       } else {
-        header?.classList.remove("scrolled")
+        header?.classList.remove("scrolled");
       }
-    })
+    });
 
     // Initial reveal call
-    reveal()
+    reveal();
 
     return () => {
-      window.removeEventListener("load", reveal)
-      window.removeEventListener("scroll", reveal)
-    }
-  }, [])
+      window.removeEventListener("load", reveal);
+      window.removeEventListener("scroll", reveal);
+    };
+  }, []);
 
   return (
     <main>
@@ -55,5 +55,5 @@ export default function Home() {
       <Partners />
       <Community />
     </main>
-  )
+  );
 }

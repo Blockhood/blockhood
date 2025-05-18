@@ -8,6 +8,7 @@ import { useAuth } from "@/components/auth-provider";
 import AuthDialog from "@/components/auth-dialog";
 import { useTheme } from "next-themes";
 import React from "react";
+import Loading from "@/app/loading";
 
 export default function GuidePage() {
   const params = useParams();
@@ -59,14 +60,7 @@ export default function GuidePage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
-          <p className="text-gray-500">Loading guide...</p>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (!guide) return null;
