@@ -1004,6 +1004,7 @@ footer .logo-footer img {
 .event-image {
   height: 200px;
   position: relative;
+  overflow: hidden;
 }
 
 .event-image img {
