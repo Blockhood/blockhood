@@ -12,7 +12,8 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
+  const user = localStorage.getItem("id") || "";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -78,8 +79,8 @@ export default function Header() {
                   <button className="flex items-center gap-2 rounded-2xl px-3 py-2 border border-gray-700 bg-darker hover:bg-gray-800 transition-colors">
                     <div className="w-8 h-8 rounded-full overflow-hidden">
                       <Image
-                        src={user.avatar || "/default_pp.jpg"}
-                        alt={user.name}
+                        src={"/default_pp.jpg"}
+                        alt={"profile"}
                         width={32}
                         height={32}
                       />
@@ -87,13 +88,13 @@ export default function Header() {
                   </button>
                   <div className="absolute right-0 mt-2 w-48 bg-gray-800/95 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 dropdown-menu">
                     <Link
-                      href="/profile"
+                      href="/"
                       className="flex items-center px-4 py-2.5 text-accent hover:bg-gray-700/50 transition-colors"
                     >
                       <i className="fas fa-user mr-2"></i> Profile
                     </Link>
                     <Link
-                      href="/dashboard"
+                      href="/"
                       className="flex items-center px-4 py-2.5 text-accent hover:bg-gray-700/50 transition-colors"
                     >
                       <i className="fas fa-tachometer-alt mr-2"></i> Dashboard

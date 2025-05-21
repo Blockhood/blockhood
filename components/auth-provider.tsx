@@ -1,40 +1,40 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
+import type React from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 type User = {
-  id: string
-  name: string
-  email: string
-  avatar?: string
-} | null
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+} | null;
 
 type AuthContextType = {
-  user: User
-  login: (email: string, password: string) => Promise<void>
-  register: (name: string, email: string, password: string) => Promise<void>
-  logout: () => void
-  isLoading: boolean
-}
+  user: User;
+  login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
+  logout: () => void;
+  isLoading: boolean;
+};
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<User>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Check if user is stored in localStorage
-    const storedUser = localStorage.getItem("blockhood_user")
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser))
+      setUser(JSON.parse(storedUser));
     }
-    setIsLoading(false)
-  }, [])
+    setIsLoading(false);
+  }, []);
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       // Mock login - in a real app, this would be an API call
       // For demo purposes, we'll just create a mock user
@@ -43,20 +43,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name: email.split("@")[0],
         email,
         avatar: "/default_pp.jpg",
-      }
+      };
 
-      setUser(mockUser)
-      localStorage.setItem("blockhood_user", JSON.stringify(mockUser))
+      setUser(mockUser);
+      localStorage.setItem("user", JSON.stringify(mockUser));
     } catch (error) {
-      console.error("Login failed:", error)
-      throw error
+      console.error("Login failed:", error);
+      throw error;
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const register = async (name: string, email: string, password: string) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       // Mock registration - in a real app, this would be an API call
       const mockUser = {
@@ -64,30 +64,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name,
         email,
         avatar: "/default_pp.jpg",
-      }
+      };
 
-      setUser(mockUser)
-      localStorage.setItem("blockhood_user", JSON.stringify(mockUser))
+      setUser(mockUser);
+      localStorage.setItem("user", JSON.stringify(mockUser));
     } catch (error) {
-      console.error("Registration failed:", error)
-      throw error
+      console.error("Registration failed:", error);
+      throw error;
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const logout = () => {
-    setUser(null)
-    localStorage.removeItem("blockhood_user")
-  }
+    setUser(null);
+    localStorage.removeItem("sb-sbtscaztdlyqijvksdmo-auth-token");
+    localStorage.removeItem("id");
+  };
 
-  return <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
+  return context;
 }
