@@ -8,148 +8,16 @@ import { useAuth } from "@/components/auth-provider";
 import AuthDialog from "@/components/auth-dialog";
 import { useTheme } from "next-themes";
 import Loading from "@/app/loading";
-
-// Mock data for events
-const eventsData = [
-  {
-    id: "1",
-    title: "Web3 Beginners Workshop",
-    description:
-      "Join us for a hands-on workshop designed to introduce beginners to the world of Web3.",
-    longDescription: `
-      <p>Are you curious about Web3 but don't know where to start? This workshop is designed specifically for beginners who want to understand the fundamentals of Web3 technologies and how they're reshaping the internet.</p>
-      
-      <h3>What You'll Learn:</h3>
-      <ul>
-        <li>The key differences between Web2 and Web3</li>
-        <li>Understanding blockchain technology and its role in Web3</li>
-        <li>How to set up your first Web3 wallet</li>
-        <li>Navigating decentralized applications (dApps)</li>
-        <li>Introduction to NFTs and their use cases</li>
-        <li>Overview of decentralized finance (DeFi)</li>
-      </ul>
-      
-      <h3>Workshop Format:</h3>
-      <p>This is a hands-on, interactive workshop. Participants will be guided through practical exercises including setting up a wallet, interacting with a dApp, and exploring the Web3 ecosystem. The workshop will conclude with a Q&A session where you can get answers to all your Web3 questions.</p>
-      
-      <h3>Who Should Attend:</h3>
-      <p>This workshop is perfect for:</p>
-      <ul>
-        <li>Complete beginners with no prior blockchain knowledge</li>
-        <li>Web developers curious about Web3</li>
-        <li>Anyone interested in understanding the future of the internet</li>
-        <li>Students looking to expand their tech knowledge</li>
-      </ul>
-      
-      <h3>Requirements:</h3>
-      <p>Participants should have:</p>
-      <ul>
-        <li>A laptop or desktop computer</li>
-        <li>A stable internet connection</li>
-        <li>Basic computer literacy</li>
-      </ul>
-      
-      <p>No prior blockchain or cryptocurrency knowledge is required!</p>
-    `,
-    image: "/placeholder.svg?height=600&width=1200",
-    date: {
-      day: "15",
-      month: "May",
-      year: "2025",
-      full: "May 15, 2025",
-    },
-    time: "2:00 PM - 4:00 PM",
-    timezone: "UTC",
-    location: "Virtual (Zoom)",
-    locationDetails: {
-      type: "virtual",
-      platform: "Zoom",
-      link: "https://zoom.us/j/example (link will be sent to registered participants)",
-    },
-    host: {
-      name: "Alex Johnson",
-      avatar: "/default_pp.jpg",
-      bio: "Blockchain educator and developer with 5 years of experience in the Web3 space.",
-    },
-    attendees: 42,
-    maxAttendees: 100,
-    isFree: true,
-    price: "Free",
-    tags: ["workshop", "beginners", "web3", "blockchain"],
-    relatedEvents: [2, 3],
-  },
-  {
-    id: "2",
-    title: "DeFi Deep Dive",
-    description:
-      "Explore the world of decentralized finance with experts in the field.",
-    longDescription: `<p>Detailed description of the DeFi Deep Dive event would go here...</p>`,
-    image: "/placeholder.svg?height=600&width=1200",
-    date: {
-      day: "22",
-      month: "May",
-      year: "2025",
-      full: "May 22, 2025",
-    },
-    time: "6:00 PM - 8:00 PM",
-    timezone: "UTC",
-    location: "Virtual (Discord)",
-    locationDetails: {
-      type: "virtual",
-      platform: "Discord",
-      link: "https://discord.gg/example (link will be sent to registered participants)",
-    },
-    host: {
-      name: "Sarah Chen",
-      avatar: "/default_pp.jpg",
-      bio: "DeFi researcher and protocol analyst with expertise in yield optimization.",
-    },
-    attendees: 78,
-    maxAttendees: 150,
-    isFree: true,
-    price: "Free",
-    tags: ["defi", "finance", "ethereum", "yield"],
-    relatedEvents: [1, 3],
-  },
-  {
-    id: "3",
-    title: "NFT Creation Masterclass",
-    description:
-      "Learn how to create, mint, and sell your own NFTs in this comprehensive masterclass.",
-    longDescription: `<p>Detailed description of the NFT Creation Masterclass would go here...</p>`,
-    image: "/placeholder.svg?height=600&width=1200",
-    date: {
-      day: "29",
-      month: "May",
-      year: "2025",
-      full: "May 29, 2025",
-    },
-    time: "3:00 PM - 5:30 PM",
-    timezone: "UTC",
-    location: "Virtual (Zoom)",
-    locationDetails: {
-      type: "virtual",
-      platform: "Zoom",
-      link: "https://zoom.us/j/example (link will be sent to registered participants)",
-    },
-    host: {
-      name: "David Wilson",
-      avatar: "/default_pp.jpg",
-      bio: "Digital artist and NFT creator with over 100 successful NFT launches.",
-    },
-    attendees: 65,
-    maxAttendees: 120,
-    isFree: false,
-    price: "$25",
-    tags: ["nft", "art", "creation", "masterclass"],
-    relatedEvents: [1, 2],
-  },
-];
+import { getBySlug } from "@/lib/crud";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function EventPage() {
   const params = useParams();
+  const rawId = params?.id;
+  const slug: string = Array.isArray(rawId) ? rawId[0] : rawId || "";
   const router = useRouter();
-  const { user } = useAuth();
+  const user = localStorage.getItem("id") || "";
   const [event, setEvent] = useState<any>(null);
   const [relatedEvents, setRelatedEvents] = useState<any[]>([]);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
@@ -158,32 +26,34 @@ export default function EventPage() {
   const { theme } = useTheme();
 
   useEffect(() => {
-    // Simulate loading data
-    setIsLoading(true);
+    const fetchEvent = async () => {
+      try {
+        setIsLoading(true);
 
-    setTimeout(() => {
-      const foundEvent = eventsData.find((e) => e.id === params.id);
-
-      if (foundEvent) {
-        setEvent(foundEvent);
-
-        // Get related events
-        if (foundEvent.relatedEvents && foundEvent.relatedEvents.length > 0) {
-          const related = eventsData
-            .filter((e) =>
-              foundEvent.relatedEvents.includes(Number.parseInt(e.id))
+        const fetchedEvent = await getBySlug<any>(
+          "events",
+          slug,
+          `
+            *,
+            user:users!events_user_id_fkey(id, full_name),
+            event_tags(
+              tag:tags(id, name)
             )
-            .slice(0, 2);
-          setRelatedEvents(related);
-        }
-      } else {
-        // Event not found, redirect to events list
-        router.push("/events");
-      }
+          `
+        );
 
-      setIsLoading(false);
-    }, 500);
-  }, [params.id, router]);
+        setEvent(fetchedEvent);
+      } catch (error) {
+        console.error("Failed to fetch event:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEvent();
+  }, [slug]);
+
+  console.log("event: ", event);
 
   const handleRegister = () => {
     if (!user) {
@@ -194,8 +64,21 @@ export default function EventPage() {
     setIsRegistered(!isRegistered);
   };
 
-  const formatDate = (date: any) => {
-    return `${date.month} ${date.day}, ${date.year}`;
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   if (isLoading) {
@@ -206,7 +89,7 @@ export default function EventPage() {
 
   return (
     <main>
-      <div className="bg-gradient-to-b from-darker to-dark py-20">
+      <div className="bg-gradient-to-b from-darker to-dark pt-20">
         <div className="container max-w-4xl mx-auto px-4">
           <div className="mb-6">
             <Link
@@ -219,36 +102,40 @@ export default function EventPage() {
 
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              {event.title}
+              {event?.title}
             </h1>
 
             <div className="flex flex-wrap items-center text-sm text-gray-400 gap-4 mb-6">
               <div className="flex items-center">
                 <i className="far fa-calendar mr-2"></i>
-                <span>{formatDate(event.date)}</span>
+                <span>{formatDate(event?.start_time)}</span>
               </div>
               <div className="flex items-center">
                 <i className="far fa-clock mr-2"></i>
-                <span>{event.time}</span>
+                <span>
+                  {formatTime(event?.start_time)} -{" "}
+                  {formatTime(event?.end_time)}
+                </span>
               </div>
               <div className="flex items-center">
                 <i className="fas fa-map-marker-alt mr-2"></i>
-                <span>{event.location}</span>
+                <span>
+                  {event?.location} ({event?.platform})
+                </span>
               </div>
             </div>
 
             <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
-                <Image
-                  src={event.host.avatar || "/placeholder.svg"}
-                  alt={event.host.name}
-                  width={40}
-                  height={40}
-                />
+              <div className="w-10 h-10 rounded-full overflow-hidden mr-3 bg-gray-600 flex items-center justify-center">
+                <span className="text-white font-medium">
+                  {event?.user?.full_name?.charAt(0) || "U"}
+                </span>
               </div>
               <div>
-                <div className="font-medium">Hosted by {event.host.name}</div>
-                <div className="text-sm text-gray-400">{event.host.bio}</div>
+                <div className="font-medium">
+                  Hosted by {event?.user?.full_name || "Unknown"}
+                </div>
+                <div className="text-sm text-gray-400">Event Organizer</div>
               </div>
             </div>
           </div>
@@ -260,35 +147,52 @@ export default function EventPage() {
           <div className="md:col-span-2">
             <div className="relative mb-8 rounded-xl overflow-hidden">
               <Image
-                src={event.image || "/placeholder.svg"}
-                alt={event.title}
+                src={event?.image_url || "/placeholder.svg"}
+                alt={event?.title || "Event image"}
                 width={1200}
                 height={600}
                 className="w-full h-auto"
               />
             </div>
 
-            <div
-              className={`event-description prose ${
-                theme === "light" ? "prose-gray" : "prose-invert"
-              } max-w-none mb-10`}
-              dangerouslySetInnerHTML={{ __html: event.longDescription }}
-            ></div>
-
-            <div className="border-t border-b py-6 mb-10 flex flex-wrap gap-2">
-              {event.tags.map((tag: string) => (
-                <span
-                  key={tag}
-                  className={`px-3 py-1 rounded-full text-sm ${
-                    theme === "light"
-                      ? "bg-gray-200 text-gray-800"
-                      : "bg-gray-800 text-gray-200"
-                  }`}
-                >
-                  #{tag}
-                </span>
-              ))}
+            <div className="mb-6">
+              <h3 className="text-xl font-bold mb-4">About This Event</h3>
+              <div
+                className={`event-description prose ${
+                  theme === "light" ? "prose-gray" : "prose-invert"
+                } max-w-none`}
+              >
+                <div className="prose dark:prose-invert text-xl">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {event?.description.replace(/\\n/g, "\n")}
+                  </ReactMarkdown>
+                </div>
+                {event?.summary && (
+                  <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                      Summary: {event.summary}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
+
+            {event?.event_tags && event.event_tags.length > 0 && (
+              <div className="border-t border-b py-6 mb-10 flex flex-wrap gap-2">
+                {event.event_tags.map((eventTag: any, index: number) => (
+                  <span
+                    key={eventTag.tag?.id || index}
+                    className={`px-3 py-1 rounded-full text-sm ${
+                      theme === "light"
+                        ? "bg-gray-200 text-gray-800"
+                        : "bg-gray-800 text-gray-200"
+                    }`}
+                  >
+                    #{eventTag.tag?.name}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div
               className={`rounded-xl p-6 ${
@@ -299,7 +203,7 @@ export default function EventPage() {
               {user ? (
                 <div>
                   <textarea
-                    placeholder="Ask the host a question about this event..."
+                    placeholder="Ask the organizer a question about this event..."
                     className={`w-full p-4 rounded-lg border mb-4 ${
                       theme === "light"
                         ? "bg-white border-gray-300 text-gray-800"
@@ -336,23 +240,30 @@ export default function EventPage() {
               }`}
             >
               <div className="mb-6">
-                <div className="text-2xl font-bold mb-1">{event.price}</div>
+                <div className="text-2xl font-bold mb-1">Free</div>
                 <div
                   className={`text-sm ${
                     theme === "light" ? "text-gray-600" : "text-gray-300"
                   }`}
                 >
-                  {event.attendees} attending ·{" "}
-                  {event.maxAttendees - event.attendees} spots left
+                  {event?.attendees_count || 0} registered
+                  {event?.capacity &&
+                    ` · ${
+                      event.capacity - (event?.attendees_count || 0)
+                    } spots left`}
                 </div>
-                <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary"
-                    style={{
-                      width: `${(event.attendees / event.maxAttendees) * 100}%`,
-                    }}
-                  ></div>
-                </div>
+                {event?.capacity && (
+                  <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary"
+                      style={{
+                        width: `${
+                          ((event?.attendees_count || 0) / event.capacity) * 100
+                        }%`,
+                      }}
+                    ></div>
+                  </div>
+                )}
               </div>
 
               <button
@@ -378,10 +289,11 @@ export default function EventPage() {
                   <div>
                     <div className="font-medium">Date and Time</div>
                     <div className="text-sm text-gray-500">
-                      {formatDate(event.date)}
+                      {formatDate(event?.start_time)}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {event.time} ({event.timezone})
+                      {formatTime(event?.start_time)} -{" "}
+                      {formatTime(event?.end_time)}
                     </div>
                   </div>
                 </div>
@@ -393,13 +305,11 @@ export default function EventPage() {
                   <div>
                     <div className="font-medium">Location</div>
                     <div className="text-sm text-gray-500">
-                      {event.location}
+                      {event?.location}
                     </div>
-                    {event.locationDetails.type === "virtual" && (
-                      <div className="text-sm text-gray-500">
-                        Platform: {event.locationDetails.platform}
-                      </div>
-                    )}
+                    <div className="text-sm text-gray-500">
+                      Platform: {event?.platform}
+                    </div>
                     {isRegistered && (
                       <div className="mt-2">
                         <a
@@ -420,7 +330,7 @@ export default function EventPage() {
                   <div>
                     <div className="font-medium">Host</div>
                     <div className="text-sm text-gray-500">
-                      {event.host.name}
+                      {event?.user?.full_name || "Unknown"}
                     </div>
                   </div>
                 </div>
@@ -450,28 +360,28 @@ export default function EventPage() {
                 >
                   <div className="h-40 overflow-hidden relative">
                     <Image
-                      src={relatedEvent.image || "/placeholder.svg"}
+                      src={relatedEvent.image_url || "/placeholder.svg"}
                       alt={relatedEvent.title}
                       width={600}
                       height={300}
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute top-3 left-3 bg-primary text-white px-3 py-1 rounded-lg text-sm font-medium">
-                      {relatedEvent.date.month} {relatedEvent.date.day}
+                      {formatDate(relatedEvent.start_time)}
                     </div>
                   </div>
                   <div className="p-4">
                     <h4 className="font-bold mb-2">{relatedEvent.title}</h4>
                     <p className="text-sm text-gray-400 mb-3">
-                      {relatedEvent.description}
+                      {relatedEvent.summary || relatedEvent.description}
                     </p>
                     <div className="flex justify-between items-center">
                       <div className="text-sm">
                         <i className="far fa-clock mr-1"></i>{" "}
-                        {relatedEvent.time}
+                        {formatTime(relatedEvent.start_time)}
                       </div>
                       <Link
-                        href={`/events/${relatedEvent.id}`}
+                        href={`/events/${relatedEvent.slug}`}
                         className="text-accent hover:underline text-sm"
                       >
                         View Event
