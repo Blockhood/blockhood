@@ -58,7 +58,7 @@ const careers = [
 
 export default function CareersPage() {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const { user } = useAuth();
+  const user = localStorage.getItem("id") || "";
 
   return (
     <main>
@@ -136,7 +136,7 @@ export default function CareersPage() {
               <div className="submit-guide">
                 <h3>Have a Web3 job opportunity?</h3>
                 <p>Share job openings with the Blockhood community</p>
-                <Link href="/careers/post" className="cta-button cta-primary">
+                <Link href="/careers/create" className="cta-button cta-primary">
                   <i className="fas fa-plus-circle"></i> Post a Job
                 </Link>
               </div>
