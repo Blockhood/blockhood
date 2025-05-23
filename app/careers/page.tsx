@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/components/auth-provider";
@@ -58,7 +58,12 @@ const careers = [
 
 export default function CareersPage() {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const user = localStorage.getItem("id") || "";
+  const [user, setUser] = useState("");
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("id") || "";
+    setUser(storedUser);
+  }, []);
 
   return (
     <main>

@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 import SignInPrompt from "@/components/sign-in";
@@ -10,7 +10,12 @@ import { create } from "@/lib/crud";
 
 export default function PostJobPage() {
   const router = useRouter();
-  const user = localStorage.getItem("id") || "";
+  const [user, setUser] = useState("");
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("id") || "";
+    setUser(storedUser);
+  }, []);
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [about, setAbout] = useState("");

@@ -10,7 +10,12 @@ import { getAll } from "@/lib/crud";
 
 export default function EventsPage() {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const user = localStorage.getItem("id") || "";
+  const [user, setUser] = useState("");
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("id") || "";
+    setUser(storedUser);
+  }, []);
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

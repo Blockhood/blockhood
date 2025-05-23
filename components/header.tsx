@@ -13,7 +13,12 @@ export default function Header() {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { logout } = useAuth();
-  const user = localStorage.getItem("id") || "";
+  const [user, setUser] = useState("");
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("id") || "";
+    setUser(storedUser);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {

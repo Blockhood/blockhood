@@ -14,7 +14,12 @@ import Loading from "../loading";
 export default function GuidesPage() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const user = localStorage.getItem("id") || "";
+  const [user, setUser] = useState("");
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("id") || "";
+    setUser(storedUser);
+  }, []);
   const { theme } = useTheme();
   const { handleError, ErrorToasts } = useErrorHandler();
   // const [guides, setGuides] = useState<Guide[]>([]);

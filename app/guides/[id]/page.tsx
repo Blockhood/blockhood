@@ -18,7 +18,12 @@ export default function GuidePage() {
   const rawId = params?.id;
   const slug: string = Array.isArray(rawId) ? rawId[0] : rawId || "";
   const router = useRouter();
-  const user = localStorage.getItem("id") || "";
+  const [user, setUser] = useState("");
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("id") || "";
+    setUser(storedUser);
+  }, []);
   const [guide, setGuide] = useState<any>(null);
   const [relatedGuides, setRelatedGuides] = useState<any[]>([]);
   const [showAuthDialog, setShowAuthDialog] = useState(false);

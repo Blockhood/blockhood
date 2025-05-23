@@ -17,7 +17,12 @@ export default function EventPage() {
   const rawId = params?.id;
   const slug: string = Array.isArray(rawId) ? rawId[0] : rawId || "";
   const router = useRouter();
-  const user = localStorage.getItem("id") || "";
+  const [user, setUser] = useState("");
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("id") || "";
+    setUser(storedUser);
+  }, []);
   const [event, setEvent] = useState<any>(null);
   const [relatedEvents, setRelatedEvents] = useState<any[]>([]);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
