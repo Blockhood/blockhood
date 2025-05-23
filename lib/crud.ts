@@ -29,14 +29,16 @@ export async function getById<T>(table: string, id: string): Promise<T> {
 
 export async function getBySlug<T>(
   table: string,
-  slug: string,
+  column: string,
+  value: string,
   relations?: string
 ): Promise<T> {
   const { data, error } = await supabase
     .from(table)
     .select(relations || "*")
-    .eq("slug", slug)
+    .eq(column, value)
     .single();
+
   if (error) {
     throw error;
   }

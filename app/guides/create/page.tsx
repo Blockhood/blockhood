@@ -58,7 +58,6 @@ export default function SubmitGuidePage() {
         imageUrl = await uploadImage(image);
       }
 
-      // 1. Split tags string dan trimming
       const tagNames = tags
         .split(",")
         .map((tag) => tag.trim().toLowerCase())
@@ -67,7 +66,6 @@ export default function SubmitGuidePage() {
       const tagIds: string[] = [];
 
       for (const tagName of tagNames) {
-        // Cek apakah tag sudah ada berdasarkan slug/name
         const { data: existingTag, error: fetchError } = await supabase
           .from("tags")
           .select("id")
@@ -75,17 +73,14 @@ export default function SubmitGuidePage() {
           .single();
 
         if (fetchError && fetchError.code !== "PGRST116") {
-          // PGRST116 = no rows found (normal), selain itu lempar error
           throw fetchError;
         }
 
         if (existingTag) {
           tagIds.push(existingTag.id);
         } else {
-          // Jika tidak ada, buat tag baru
           await create("tags", { name: tagName });
 
-          // Ambil kembali ID dari tag baru
           const { data: newTag, error: newTagError } = await supabase
             .from("tags")
             .select("id")
@@ -97,7 +92,6 @@ export default function SubmitGuidePage() {
         }
       }
 
-      // 2. Simpan guide
       await create("guides", {
         title,
         summary,
@@ -109,7 +103,6 @@ export default function SubmitGuidePage() {
         user_id: user,
       });
 
-      // Ambil guide yang baru saja dibuat (berdasarkan slug)
       const { data: guideData, error: guideError } = await supabase
         .from("guides")
         .select("id")
@@ -119,7 +112,6 @@ export default function SubmitGuidePage() {
       if (guideError) throw guideError;
       const guideId = guideData.id;
 
-      // 3. Simpan relasi guide ↔ tags
       for (const tagId of tagIds) {
         await create("guide_tags", {
           guide_id: guideId,

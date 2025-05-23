@@ -13,7 +13,7 @@ export default function Header() {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { logout } = useAuth();
-  const [user, setUser] = useState("");
+  const [user, setUser] = useState<any>();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("id") || "";
@@ -106,7 +106,11 @@ export default function Header() {
                     </Link>
                     <div className="border-t border-gray-700 my-1 dropdown-divider"></div>
                     <button
-                      onClick={logout}
+                      onClick={() => {
+                        logout();
+                        setShowAuthDialog(true);
+                        setUser(false);
+                      }}
                       className="flex items-center w-full text-left px-4 py-2.5 text-accent hover:bg-gray-700/50 transition-colors"
                     >
                       <i className="fas fa-sign-out-alt mr-2"></i> Sign Out

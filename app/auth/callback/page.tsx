@@ -1,23 +1,30 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { create, getById } from "@/lib/crud";
 
 export default function AuthCallbackHandler() {
   const router = useRouter();
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading"
+  );
 
   useEffect(() => {
     const checkAndCreateUser = async () => {
       const {
         data: { user },
+        error,
       } = await supabase.auth.getUser();
 
-      if (!user) return;
+      if (!user || error) {
+        setStatus("error");
+        return;
+      }
 
       try {
-        await getById("users", user.id);
+        await getById("users", user.id); // cek user
       } catch {
         const newUser = {
           id: user.id,
@@ -26,15 +33,33 @@ export default function AuthCallbackHandler() {
           created_at: new Date().toISOString(),
         };
 
-        await create("users", newUser);
+        try {
+          await create("users", newUser); // buat user jika tidak ditemukan
+        } catch {
+          setStatus("error");
+          return;
+        }
       }
 
       localStorage.setItem("id", user.id);
-      router.push("/");
+      setStatus("success");
+      setTimeout(() => router.push("/"), 1000); // Redirect setelah 1 detik
     };
 
     checkAndCreateUser();
   }, [router]);
 
-  return <div className="h-full"></div>;
+  return (
+    <div className="h-svh flex justify-center items-center">
+      {status === "loading" && (
+        <div className="text-4xl animate-pulse">Authenticating...</div>
+      )}
+      {status === "success" && (
+        <div className="text-4xl">Login successful! Redirecting...</div>
+      )}
+      {status === "error" && (
+        <div className="text-4xl">Authentication failed. Please try again.</div>
+      )}
+    </div>
+  );
 }

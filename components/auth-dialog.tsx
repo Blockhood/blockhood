@@ -3,6 +3,8 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import { useTheme } from "next-themes";
+import { create, getBySlug } from "@/lib/crud";
+import bcrypt from "bcryptjs";
 
 export default function AuthDialog({ onClose }: { onClose: () => void }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -21,23 +23,62 @@ export default function AuthDialog({ onClose }: { onClose: () => void }) {
 
     try {
       if (isLogin) {
-        // Login with email/password
-        const { error } = await supabase.auth.signInWithPassword({
+        // Login with email/password using Supabase Auth
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
+
         if (error) throw error;
+
+        // Store user ID in localStorage if needed
+        if (data.user) {
+          localStorage.setItem("id", data.user.id);
+        }
       } else {
         // Register new user
         if (!name) throw new Error("Name is required");
-        const { error } = await supabase.auth.signUp({
+
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: name } },
+          options: {
+            data: { full_name: name },
+          },
         });
+
         if (error) throw error;
+
+        // Check if user needs email confirmation
+        if (signUpData.user && !signUpData.session) {
+          // User created but needs email confirmation
+          setError(
+            "Please check your email and click the confirmation link to complete registration."
+          );
+          return; // Don't close the modal, let user see the message
+        }
+
+        const user = signUpData.user;
+        if (!user) throw new Error("User registration failed");
+
+        // Create user record in your users table (only if email is confirmed)
+        const { error: createError } = await supabase.from("users").insert({
+          id: user.id,
+          email: user.email,
+          full_name: name,
+          created_at: new Date().toISOString(),
+        });
+
+        if (createError) throw createError;
       }
-      onClose();
+
+      // Only close modal if registration is complete or login is successful
+      if (
+        isLogin
+        // || (signUpData?.session)
+      ) {
+        onClose();
+      }
     } catch (err) {
       console.error("Authentication error:", err);
       setError(err instanceof Error ? err.message : "Authentication failed");
@@ -53,7 +94,9 @@ export default function AuthDialog({ onClose }: { onClose: () => void }) {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: `${window.location.origin}/auth/callback` },
+        // options: {
+        //   redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+        // },
       });
       if (error) throw error;
     } catch (err) {

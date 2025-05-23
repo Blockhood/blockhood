@@ -66,6 +66,7 @@ export default function GuidePage() {
 
         const fetchedGuide = await getBySlug<any>(
           "guides",
+          "slug",
           slug,
           `
             *,
