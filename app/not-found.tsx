@@ -21,7 +21,7 @@ export default function NotFound() {
       <div className="text-center max-w-2xl mx-auto">
         <div className="mb-8 relative w-40 h-40 mx-auto">
           {/* <Image
-            src="/blockchain-logo.png"
+            src="/blockhood-logo.png"
             alt="Blockhood Logo"
             width={160}
             height={160}

@@ -1,5 +1,5 @@
-import Image from "next/image"
-import Link from "next/link"
+import Image from "next/image";
+import Link from "next/link";
 
 export default function Hero() {
   return (
@@ -8,15 +8,21 @@ export default function Hero() {
         <div className="hero-content">
           <div className="hero-flex">
             <div className="hero-logo">
-              <Image src="/blockchain-logo.png" alt="Blockhood Logo" width={180} height={180} />
+              <Image
+                src="/blockhood-logo.png"
+                alt="Blockhood Logo"
+                width={180}
+                height={180}
+              />
             </div>
             <div className="hero-main-text">
               <h1 className="reveal">
                 Welcome to <span>Blockhood</span> Community
               </h1>
               <p className="reveal">
-                Your friendly Web3 community built to help beginners navigate the blockchain world. Learn, connect, and
-                grow together in the decentralized space.
+                Your friendly Web3 community built to help beginners navigate
+                the blockchain world. Learn, connect, and grow together in the
+                decentralized space.
               </p>
             </div>
           </div>
@@ -36,5 +42,5 @@ export default function Hero() {
         </div>
       </div>
     </section>
-  )
+  );
 }
