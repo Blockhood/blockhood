@@ -59,7 +59,7 @@ export default function GuidesPage() {
       if (action === "bookmark" && Math.random() > 0.7) {
         throw new Error("Failed to bookmark guide - server error");
       }
-      console.log(`Guide ${action} successful`);
+      // console.log(`Guide ${action} successful`);
     } catch (error) {
       handleError(error);
     }
@@ -69,7 +69,6 @@ export default function GuidesPage() {
     return <Loading />;
   }
 
-  console.log("guides: ", guides);
   return (
     <main>
       <section className="page-header">

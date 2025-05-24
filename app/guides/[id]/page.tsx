@@ -106,9 +106,6 @@ export default function GuidePage() {
     fetchGuide();
   }, [slug]);
 
-  console.log("guide: ", guide);
-  console.log("guides: ", relatedGuides);
-
   const handleBookmark = () => {
     if (!user) {
       setShowAuthDialog(true);
@@ -124,7 +121,6 @@ export default function GuidePage() {
   // }
 
   if (!guide) return null;
-  console.log("RAW:", guide);
 
   return (
     <main>

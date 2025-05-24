@@ -5,8 +5,10 @@ import Image from "next/image";
 import { useTheme } from "next-themes";
 import { create, getBySlug } from "@/lib/crud";
 import bcrypt from "bcryptjs";
+import { useRouter } from "next/navigation";
 
 export default function AuthDialog({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -34,6 +36,8 @@ export default function AuthDialog({ onClose }: { onClose: () => void }) {
         // Store user ID in localStorage if needed
         if (data.user) {
           localStorage.setItem("id", data.user.id);
+          // router.push("/auth/callback");
+          window.location.reload();
         }
       } else {
         // Register new user

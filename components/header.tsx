@@ -16,8 +16,22 @@ export default function Header() {
   const [user, setUser] = useState<any>();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("id") || "";
-    setUser(storedUser);
+    const raw = localStorage.getItem("sb-sbtscaztdlyqijvksdmo-auth-token");
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        const userId = parsed?.user?.id;
+        if (userId) {
+          setUser(userId);
+          return;
+        }
+      } catch (error) {
+        console.error("Error parsing auth token:", error);
+      }
+    }
+
+    const fallbackId = localStorage.getItem("id") || "";
+    setUser(fallbackId);
   }, []);
 
   useEffect(() => {

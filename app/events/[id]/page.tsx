@@ -58,8 +58,6 @@ export default function EventPage() {
     fetchEvent();
   }, [slug]);
 
-  console.log("event: ", event);
-
   const handleRegister = () => {
     if (!user) {
       setShowAuthDialog(true);
