@@ -8,6 +8,7 @@ import SignInPrompt from "@/components/sign-in";
 import AuthDialog from "@/components/auth-dialog";
 import { create, getAll } from "@/lib/crud";
 import { uploadImage } from "@/lib/upload-image";
+import { supabase } from "@/lib/supabase";
 
 interface Tag {
   id: string;
@@ -36,25 +37,10 @@ export default function HostEventPage() {
   const [locationType, setLocationType] = useState("virtual");
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [tags, setTags] = useState(""); // Changed to string like guides
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-
-  // Fetch available tags
-  useEffect(() => {
-    const fetchTags = async () => {
-      try {
-        const tags = await getAll<Tag>("tags", "*");
-        setAvailableTags(tags);
-      } catch (error) {
-        console.error("Failed to fetch tags:", error);
-      }
-    };
-
-    fetchTags();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +86,41 @@ export default function HostEventPage() {
         imageUrl = await uploadImage(image, "guides/");
       }
 
+      // Handle tags like in guides/create
+      const tagNames = tags
+        .split(",")
+        .map((tag) => tag.trim().toLowerCase())
+        .filter((tag) => tag.length > 0);
+
+      const tagIds: string[] = [];
+
+      for (const tagName of tagNames) {
+        const { data: existingTag, error: fetchError } = await supabase
+          .from("tags")
+          .select("id")
+          .eq("name", tagName)
+          .single();
+
+        if (fetchError && fetchError.code !== "PGRST116") {
+          throw fetchError;
+        }
+
+        if (existingTag) {
+          tagIds.push(existingTag.id);
+        } else {
+          await create("tags", { name: tagName });
+
+          const { data: newTag, error: newTagError } = await supabase
+            .from("tags")
+            .select("id")
+            .eq("name", tagName)
+            .single();
+
+          if (newTagError) throw newTagError;
+          tagIds.push(newTag.id);
+        }
+      }
+
       // Create the event
       const eventData = {
         title,
@@ -112,25 +133,29 @@ export default function HostEventPage() {
         platform: locationType === "virtual" ? platform : null,
         capacity: capacity ? parseInt(capacity) : null,
         attendees_count: 0,
-        user_id: user, // Fixed: use user_id instead of host_id
+        user_id: user,
         image_url: imageUrl,
       };
 
-      const createdEvent = await create("events", eventData);
+      await create("events", eventData);
 
-      // // Create event_tags relationships if tags are selected
-      // if (selectedTags.length > 0 && createdEvent?.id) {
-      //   for (const tagId of selectedTags) {
-      //     try {
-      //       await create("event_tags", {
-      //         event_id: createdEvent.id,
-      //         tag_id: tagId,
-      //       });
-      //     } catch (tagError) {
-      //       console.error("Failed to create event tag relationship:", tagError);
-      //     }
-      //   }
-      // }
+      // Get the created event to get its ID
+      const { data: eventData_result, error: eventError } = await supabase
+        .from("events")
+        .select("id")
+        .eq("slug", eventSlug)
+        .single();
+
+      if (eventError) throw eventError;
+      const eventId = eventData_result.id;
+
+      // Create event_tags relationships
+      for (const tagId of tagIds) {
+        await create("event_tags", {
+          event_id: eventId,
+          tag_id: tagId,
+        });
+      }
 
       router.push("/events");
     } catch (err: any) {
@@ -160,14 +185,6 @@ export default function HostEventPage() {
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const handleTagToggle = (tagId: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tagId)
-        ? prev.filter((id) => id !== tagId)
-        : [...prev, tagId]
-    );
   };
 
   const handleLocationTypeChange = (type: string) => {
@@ -480,22 +497,23 @@ export default function HostEventPage() {
             </div>
 
             <div>
-              <label className="block text-light mb-2 font-medium">Tags</label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {availableTags.map((tag) => (
-                  <label key={tag.id} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedTags.includes(tag.id)}
-                      onChange={() => handleTagToggle(tag.id)}
-                      className="mr-2"
-                    />
-                    <span className="text-light capitalize">{tag.name}</span>
-                  </label>
-                ))}
-              </div>
+              <label
+                htmlFor="tags"
+                className="block text-light mb-2 font-medium"
+              >
+                Tags
+              </label>
+              <input
+                type="text"
+                id="tags"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-darker border-gray-700 text-light"
+                placeholder="blockchain, smart-contracts, ethereum, workshop (comma separated)"
+              />
               <p className="text-sm text-gray-400 mt-2">
-                Select relevant tags for your event to help people discover it
+                Enter tags separated by commas. New tags will be created
+                automatically.
               </p>
             </div>
 

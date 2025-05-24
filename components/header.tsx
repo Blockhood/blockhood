@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "./auth-provider";
 import AuthDialog from "./auth-dialog";
-import { Menu, X } from "lucide-react";
+import { Menu, UserRound, X } from "lucide-react";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -17,21 +17,32 @@ export default function Header() {
 
   useEffect(() => {
     const raw = localStorage.getItem("sb-sbtscaztdlyqijvksdmo-auth-token");
+
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
         const userId = parsed?.user?.id;
+
         if (userId) {
           setUser(userId);
+          return;
+        } else {
+          window.location.reload();
           return;
         }
       } catch (error) {
         console.error("Error parsing auth token:", error);
+
+        window.location.reload();
+        return;
       }
     }
 
-    const fallbackId = localStorage.getItem("id") || "";
-    setUser(fallbackId);
+    const fallbackId = localStorage.getItem("id") || user;
+
+    if (fallbackId) {
+      setUser(fallbackId);
+    }
   }, []);
 
   useEffect(() => {
@@ -57,7 +68,7 @@ export default function Header() {
             <Link href="/" className="logo">
               <div className="logo-icon">
                 <Image
-                  src="/blockchain-logo.png"
+                  src="/blockhood-logo.png"
                   alt="Blockhood Logo"
                   width={40}
                   height={40}
@@ -90,7 +101,7 @@ export default function Header() {
               </Link>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center md:gap-4">
               <ThemeToggle />
 
               {user ? (
@@ -134,9 +145,12 @@ export default function Header() {
               ) : (
                 <button
                   onClick={() => setShowAuthDialog(true)}
-                  className="cta-button cta-secondary flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:shadow-lg hover:-translate-y-0.5"
+                  className="md:cta-button md:cta-secondary flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:shadow-lg hover:-translate-y-0.5"
                 >
                   <span className="hidden md:inline">Join Us</span>
+                  <span className="md:hidden inline">
+                    <UserRound />
+                  </span>
                 </button>
               )}
 

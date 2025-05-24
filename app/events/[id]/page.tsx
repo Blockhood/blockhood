@@ -37,6 +37,7 @@ export default function EventPage() {
 
         const fetchedEvent = await getBySlug<any>(
           "events",
+          "slug",
           slug,
           `
             *,
@@ -165,7 +166,7 @@ export default function EventPage() {
                   theme === "light" ? "prose-gray" : "prose-invert"
                 } max-w-none`}
               >
-                <div className="prose dark:prose-invert text-xl">
+                <div className="prose dark:prose-invert text-lg md:text-xl">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {event?.description.replace(/\\n/g, "\n")}
                   </ReactMarkdown>

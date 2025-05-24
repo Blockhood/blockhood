@@ -134,7 +134,7 @@ export default function AuthDialog({ onClose }: { onClose: () => void }) {
         <div className="flex justify-center mb-6">
           <div className="w-20 h-20 relative">
             <Image
-              src="/blockchain-logo.png"
+              src="/blockhood-logo.png"
               alt="Blockhood Logo"
               width={80}
               height={80}

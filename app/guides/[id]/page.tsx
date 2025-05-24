@@ -4,14 +4,12 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "@/components/auth-provider";
-import AuthDialog from "@/components/auth-dialog";
 import { useTheme } from "next-themes";
-import React from "react";
-import Loading from "@/app/loading";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getAll, getBySlug } from "@/lib/crud";
+import { useAuth } from "@/components/auth-provider";
+import AuthDialog from "@/components/auth-dialog";
 
 export default function GuidePage() {
   const params = useParams();
@@ -20,50 +18,19 @@ export default function GuidePage() {
   const router = useRouter();
   const [user, setUser] = useState("");
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("id") || "";
-    setUser(storedUser);
-  }, []);
   const [guide, setGuide] = useState<any>(null);
   const [relatedGuides, setRelatedGuides] = useState<any[]>([]);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const { theme } = useTheme();
 
-  // useEffect(() => {
-  //   // Simulate loading data
-  //   setIsLoading(true);
-
-  //   setTimeout(() => {
-  //     const foundGuide = guidesData.find((g) => g.id === params.id);
-
-  //     if (foundGuide) {
-  //       setGuide(foundGuide);
-
-  //       Get related guides
-  //       if (foundGuide?.relatedGuides && foundGuide?.relatedGuides.length > 0) {
-  //         const related = guidesData
-  //           .filter((g) =>
-  //             foundGuide?.relatedGuides.includes(Number.parseInt(g.id))
-  //           )
-  //           .slice(0, 2);
-  //         setRelatedGuides(related);
-  //       }
-  //     } else {
-  //       Guide not found, redirect to guides list
-  //       router.push("/guides");
-  //     }
-
-  //     setIsLoading(false);
-  //   }, 500);
-  // }, [params.id, router]);
+  useEffect(() => {
+    setUser(localStorage.getItem("id") || "");
+  }, []);
 
   useEffect(() => {
     const fetchGuide = async () => {
       try {
-        // setLoading(true);
-
         const fetchedGuide = await getBySlug<any>(
           "guides",
           "slug",
@@ -76,34 +43,26 @@ export default function GuidePage() {
             )
           `
         );
-
         setGuide(fetchedGuide);
       } catch (error) {
         console.error("Failed to fetch guide:", error);
-        // handleError(error);
-      } finally {
-        // setLoading(false);
       }
     };
+
     const fetchRelatedGuides = async () => {
       try {
-        // setLoading(true);
-
         const fetchedGuides = await getAll<any>(
           "guides",
           "*, user:users!guides_user_id_fkey(id, full_name)"
         );
-
         setRelatedGuides(fetchedGuides);
       } catch (error) {
-        // handleError(error);
-      } finally {
-        // setLoading(false);
+        console.error("Failed to fetch related guides:", error);
       }
     };
 
-    fetchRelatedGuides();
     fetchGuide();
+    fetchRelatedGuides();
   }, [slug]);
 
   const handleBookmark = () => {
@@ -111,21 +70,15 @@ export default function GuidePage() {
       setShowAuthDialog(true);
       return;
     }
-
     setIsBookmarked(!isBookmarked);
-    // In a real app, you would save this to the user's profile
   };
-
-  // if (isLoading) {
-  //   return <Loading />;
-  // }
 
   if (!guide) return null;
 
   return (
     <main>
       <div className="bg-gradient-to-b from-darker to-dark pt-20">
-        <div className="container max-w-4xl mx-auto px-4">
+        <div className="container max-w-5xl mx-auto px-4">
           <div className="mb-6">
             <Link
               href="/guides"
@@ -148,7 +101,7 @@ export default function GuidePage() {
               {guide?.level?.toUpperCase()}
             </span>
 
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
               {guide?.title}
             </h1>
 
@@ -167,21 +120,9 @@ export default function GuidePage() {
                 <i className="far fa-clock mr-2"></i>
                 <span>{guide?.duration}</span>
               </div>
-              {/* <div className="flex items-center">
-                <i className="far fa-folder mr-2"></i>
-                <span className="capitalize">{guide?.category}</span>
-              </div> */}
             </div>
 
-            <div className="flex items-center">
-              {/* <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
-                <Image
-                  src={"/default_pp.jpg"}
-                  alt={guide?.user?.full_name}
-                  width={40}
-                  height={40}
-                />
-              </div> */}
+            <div className="flex items-center mt-4">
               <div className="w-10 h-10 rounded-full overflow-hidden mr-3 bg-gray-600 flex items-center justify-center">
                 <span className="text-white font-medium">
                   {guide?.user?.full_name?.charAt(0) || "U"}
@@ -190,7 +131,7 @@ export default function GuidePage() {
               <div>
                 <div className="font-medium">{guide?.user?.full_name}</div>
                 <div className="text-sm text-gray-400">
-                  author guide "{guide?.title}"{/* {guide?.author.bio} */}
+                  author guide "{guide?.title}"
                 </div>
               </div>
             </div>
@@ -198,20 +139,20 @@ export default function GuidePage() {
         </div>
       </div>
 
-      <div className="container max-w-4xl mx-auto px-4 py-10">
+      <div className="container max-w-5xl mx-auto px-4 py-10">
         <div className="relative mb-10 rounded-xl overflow-hidden">
           <Image
             src={guide?.image_url || "/placeholder.svg"}
             alt={guide?.title}
             width={1200}
             height={600}
-            className="w-full h-[40rem] object-cover rounded-lg"
+            className="w-full h-[20rem] md:h-[30rem] lg:h-[40rem] object-cover rounded-lg"
           />
         </div>
 
         <div className="flex justify-end mb-8">
-          <div className="flex gap-3">
-            {/* <button
+          <div className="flex gap-3 flex-wrap">
+            <button
               onClick={handleBookmark}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
                 isBookmarked
@@ -223,7 +164,7 @@ export default function GuidePage() {
             >
               <i className={`${isBookmarked ? "fas" : "far"} fa-bookmark`}></i>
               <span>{isBookmarked ? "Bookmarked" : "Bookmark"}</span>
-            </button> */}
+            </button>
 
             <button
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
@@ -243,11 +184,9 @@ export default function GuidePage() {
             theme === "light" ? "prose-gray" : "prose-invert"
           } max-w-none mb-12`}
         >
-          <div className="prose dark:prose-invert text-xl">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {guide?.content?.replace(/\\n/g, "\n")}
-            </ReactMarkdown>
-          </div>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {guide?.content?.replace(/\\n/g, "\n")}
+          </ReactMarkdown>
         </div>
 
         <div className="border-t border-b py-6 mb-10 flex flex-wrap gap-2">
@@ -272,7 +211,7 @@ export default function GuidePage() {
         ).length > 0 && (
           <div className="mb-10">
             <h3 className="text-2xl font-bold mb-6">Related Guides</h3>
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {relatedGuides
                 .filter(
                   (relatedGuide) =>
