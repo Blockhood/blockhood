@@ -7,6 +7,8 @@ import { useAuth } from "@/components/auth-provider";
 import SignInPrompt from "@/components/sign-in";
 import AuthDialog from "@/components/auth-dialog";
 import { create } from "@/lib/crud";
+import { uploadImage } from "@/lib/upload-image";
+import { supabase } from "@/lib/supabase";
 
 export default function PostJobPage() {
   const router = useRouter();
@@ -16,6 +18,7 @@ export default function PostJobPage() {
     const storedUser = localStorage.getItem("id") || "";
     setUser(storedUser);
   }, []);
+
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [about, setAbout] = useState("");
@@ -31,11 +34,12 @@ export default function PostJobPage() {
   const [companyWebsite, setCompanyWebsite] = useState("");
   const [companySize, setCompanySize] = useState("");
   const [companyFounded, setCompanyFounded] = useState("");
-  const [tagId, setTagId] = useState("");
+  const [tags, setTags] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,13 +51,68 @@ export default function PostJobPage() {
       const deadlineDate = new Date();
       deadlineDate.setDate(deadlineDate.getDate() + 30); // Default deadline 30 days from now
 
+      const slug = title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
+
+      let imageUrl = "";
+
+      if (image) {
+        const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+        if (!allowedTypes.includes(image.type)) {
+          throw new Error("Only PNG, JPG, and JPEG files are allowed.");
+        }
+
+        if (image.size > 2 * 1024 * 1024) {
+          throw new Error("Image size must be less than 2MB.");
+        }
+
+        imageUrl = await uploadImage(image);
+      }
+
+      // Handle tags similar to guides
+      const tagNames = tags
+        .split(",")
+        .map((tag) => tag.trim().toLowerCase())
+        .filter((tag) => tag.length > 0);
+
+      const tagIds: string[] = [];
+
+      // Process tags if any are provided
+      for (const tagName of tagNames) {
+        const { data: existingTag, error: fetchError } = await supabase
+          .from("tags")
+          .select("id")
+          .eq("name", tagName)
+          .single();
+
+        if (fetchError && fetchError.code !== "PGRST116") {
+          throw fetchError;
+        }
+
+        if (existingTag) {
+          tagIds.push(existingTag.id);
+        } else {
+          // Create new tag
+          await create("tags", { name: tagName });
+
+          const { data: newTag, error: newTagError } = await supabase
+            .from("tags")
+            .select("id")
+            .eq("name", tagName)
+            .single();
+
+          if (newTagError) throw newTagError;
+          tagIds.push(newTag.id);
+        }
+      }
+
+      // Create the career posting
       await create("careers", {
         title,
-        slug: title
-          .toLowerCase()
-          .replace(/[^\w\s-]/g, "")
-          .replace(/\s+/g, "-")
-          .replace(/-+/g, "-"),
+        slug,
         summary,
         about,
         responsibilities,
@@ -70,15 +129,45 @@ export default function PostJobPage() {
         company_website: companyWebsite,
         company_size: companySize,
         company_founded: companyFounded ? parseInt(companyFounded) : null,
-        tag_id: tagId || null,
+        image_url: imageUrl,
       });
 
+      // Get the created career ID to create tag relationships
+      const { data: careerData, error: careerError } = await supabase
+        .from("careers")
+        .select("id")
+        .eq("slug", slug)
+        .single();
+
+      if (careerError) throw careerError;
+      const careerId = careerData.id;
+
+      // Create career_tags relationships
+      for (const tagId of tagIds) {
+        await create("career_tags", {
+          career_id: careerId,
+          tag_id: tagId,
+        });
+      }
+
       router.push("/careers");
-    } catch (err) {
-      setError("Failed to post job. Please try again.");
+    } catch (err: any) {
+      setError(err.message || "Failed to post job. Please try again.");
       console.error(err);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -409,39 +498,54 @@ export default function PostJobPage() {
 
             <div>
               <label
-                htmlFor="image"
+                htmlFor="tags"
                 className="block text-light mb-2 font-medium"
               >
-                Company Logo / Job Image (optional)
+                Tags
               </label>
               <input
-                type="file"
-                id="image"
-                accept="image/*"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setImage(e.target.files[0]);
-                  }
-                }}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-darker border-gray-700 text-light file:text-white file:bg-primary file:border-0 file:px-4 file:py-2 file:rounded-md"
+                type="text"
+                id="tags"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-darker border-gray-700 text-light"
+                placeholder="blockchain, smart-contracts, solidity, defi (comma separated)"
               />
+              <p className="text-sm text-gray-400 mt-1">
+                Add relevant tags to help candidates find this job posting
+              </p>
             </div>
 
             <div>
               <label
-                htmlFor="tagId"
+                htmlFor="image"
                 className="block text-light mb-2 font-medium"
               >
-                Tag ID (Optional)
+                Company Logo / Job Image (Optional)
               </label>
-              <input
-                type="text"
-                id="tagId"
-                value={tagId}
-                onChange={(e) => setTagId(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-darker border-gray-700 text-light"
-                placeholder="Optional tag identifier"
-              />
+              <div className="flex flex-col space-y-2">
+                <input
+                  type="file"
+                  id="image"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-darker border-gray-700 text-light file:text-white file:bg-primary file:border-0 file:px-4 file:py-2 file:rounded-md"
+                />
+                {imagePreview && (
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-400 mb-2">Preview:</p>
+                    <img
+                      src={imagePreview}
+                      alt="Company logo preview"
+                      className="w-full max-h-48 object-contain rounded-lg bg-gray-800 p-4"
+                    />
+                  </div>
+                )}
+                <p className="text-sm text-gray-400">
+                  Upload your company logo or a relevant image. Max size: 2MB.
+                  Supported formats: PNG, JPG, JPEG
+                </p>
+              </div>
             </div>
 
             <div className="flex justify-end">

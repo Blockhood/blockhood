@@ -6,59 +6,25 @@ import Link from "next/link";
 import { useAuth } from "@/components/auth-provider";
 import AuthDialog from "@/components/auth-dialog";
 import SignInPrompt from "@/components/sign-in";
-
-// Mock data for careers
-const careers = [
-  {
-    id: 1,
-    title: "Blockchain Developer",
-    company: {
-      name: "CryptoTech",
-      location: "Remote",
-      logo: "/blockchain-logo.png",
-    },
-    type: "Full-time",
-    salary: "$90,000 - $120,000",
-    experience: "2-4 years",
-    description:
-      "We're looking for a skilled Blockchain Developer to join our team. You'll be responsible for designing and implementing blockchain solutions for our clients.",
-    tags: ["Solidity", "Ethereum", "Smart Contracts", "Web3.js"],
-  },
-  {
-    id: 2,
-    title: "Web3 Product Manager",
-    company: {
-      name: "DeFi Solutions",
-      location: "New York, NY (Hybrid)",
-      logo: "/blockchain-logo.png",
-    },
-    type: "Full-time",
-    salary: "$110,000 - $140,000",
-    experience: "3-5 years",
-    description:
-      "Join our team as a Web3 Product Manager to lead the development of our decentralized finance products. You'll work closely with developers, designers, and stakeholders.",
-    tags: ["Product Management", "DeFi", "Agile", "Blockchain"],
-  },
-  {
-    id: 3,
-    title: "NFT Community Manager",
-    company: {
-      name: "ArtBlock",
-      location: "Remote",
-      logo: "/blockchain-logo.png",
-    },
-    type: "Part-time",
-    salary: "$40,000 - $60,000",
-    experience: "1-3 years",
-    description:
-      "We're seeking a passionate Community Manager to engage with our NFT community, organize events, and grow our presence in the NFT space.",
-    tags: ["NFTs", "Community Management", "Social Media", "Discord"],
-  },
-];
+import { getAll } from "@/lib/crud";
 
 export default function CareersPage() {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [user, setUser] = useState("");
+  const [careers, setCareers] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchCareers = async () => {
+      try {
+        const fetchedCareers = await getAll<any>("careers");
+        setCareers(fetchedCareers);
+      } catch (error) {
+        console.error("Failed to fetch careers:", error);
+      }
+    };
+
+    fetchCareers();
+  }, []);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("id") || "";
@@ -86,8 +52,8 @@ export default function CareersPage() {
                   <div className="career-company">
                     <div className="career-company-logo">
                       <Image
-                        src={job.company.logo || "/placeholder.svg"}
-                        alt={job.company.name}
+                        src={job.image_url || "/blockhood-logo.png"}
+                        alt={job.company_name || "Company Logo"}
                         width={60}
                         height={60}
                       />
@@ -95,17 +61,19 @@ export default function CareersPage() {
                     <div className="career-company-info">
                       <h3>{job.title}</h3>
                       <p>
-                        {job.company.name} • {job.company.location}
+                        {job.company_name} • {job.location}
                       </p>
                     </div>
                   </div>
-                  <span className="career-type">{job.type}</span>
+                  <span className="career-type">{job.job_type}</span>
                 </div>
 
                 <div className="career-details">
                   <div className="career-detail">
                     <span className="career-detail-label">Salary</span>
-                    <span className="career-detail-value">{job.salary}</span>
+                    <span className="career-detail-value">
+                      {job.salary_range}
+                    </span>
                   </div>
                   <div className="career-detail">
                     <span className="career-detail-label">Experience</span>
@@ -115,18 +83,18 @@ export default function CareersPage() {
                   </div>
                 </div>
 
-                <p className="career-description">{job.description}</p>
+                <p className="career-description">{job.summary}</p>
 
                 <div className="career-footer">
                   <div className="career-tags">
-                    {job.tags.map((tag, index) => (
+                    {job.tags?.map((tag: string, index: number) => (
                       <span key={index} className="career-tag">
                         {tag}
                       </span>
                     ))}
                   </div>
                   <Link
-                    href={`/careers/${job.id}`}
+                    href={`/careers/${job.slug || job.id}`}
                     className="cta-button cta-secondary"
                   >
                     View Details

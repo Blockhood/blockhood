@@ -1,203 +1,107 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { useParams, useRouter } from "next/navigation"
-import { useAuth } from "@/components/auth-provider"
-import AuthDialog from "@/components/auth-dialog"
-import { useTheme } from "next-themes"
-
-// Mock data for careers
-const careersData = [
-  {
-    id: "1",
-    title: "Blockchain Developer",
-    company: {
-      name: "CryptoTech",
-      location: "Remote",
-      logo: "/blockchain-logo.png",
-      about:
-        "CryptoTech is a leading blockchain development company specializing in building decentralized applications and smart contract solutions for enterprises and startups.",
-      website: "https://example.com/cryptotech",
-      size: "50-100 employees",
-      founded: "2018",
-    },
-    type: "Full-time",
-    salary: "$90,000 - $120,000",
-    experience: "2-4 years",
-    description: `
-      <h2>About the Role</h2>
-      <p>We're looking for a skilled Blockchain Developer to join our team. You'll be responsible for designing and implementing blockchain solutions for our clients, focusing on Ethereum-based applications and smart contracts.</p>
-      
-      <h2>Responsibilities</h2>
-      <ul>
-        <li>Design, implement, and deploy smart contracts using Solidity</li>
-        <li>Develop and maintain decentralized applications (dApps)</li>
-        <li>Integrate blockchain solutions with existing systems</li>
-        <li>Optimize gas costs and ensure security of smart contracts</li>
-        <li>Collaborate with cross-functional teams to define, design, and ship new features</li>
-        <li>Identify and fix bugs and performance bottlenecks</li>
-        <li>Stay up-to-date with the latest blockchain technologies and best practices</li>
-      </ul>
-      
-      <h2>Requirements</h2>
-      <ul>
-        <li>2-4 years of experience in blockchain development</li>
-        <li>Strong proficiency in Solidity and Ethereum development</li>
-        <li>Experience with Web3.js, Ethers.js, or similar libraries</li>
-        <li>Familiarity with blockchain development frameworks (Hardhat, Truffle, etc.)</li>
-        <li>Understanding of blockchain architecture and consensus mechanisms</li>
-        <li>Strong JavaScript/TypeScript skills</li>
-        <li>Experience with React or similar frontend frameworks</li>
-        <li>Knowledge of security best practices in blockchain development</li>
-      </ul>
-      
-      <h2>Nice to Have</h2>
-      <ul>
-        <li>Experience with other blockchain platforms (Solana, Polkadot, etc.)</li>
-        <li>Contributions to open-source blockchain projects</li>
-        <li>Experience with DeFi protocols</li>
-        <li>Knowledge of cryptography and zero-knowledge proofs</li>
-        <li>Understanding of tokenomics and blockchain economics</li>
-      </ul>
-      
-      <h2>Benefits</h2>
-      <ul>
-        <li>Competitive salary and equity options</li>
-        <li>Flexible remote work policy</li>
-        <li>Health, dental, and vision insurance</li>
-        <li>401(k) matching</li>
-        <li>Professional development budget</li>
-        <li>Regular team retreats and events</li>
-        <li>Opportunity to work on cutting-edge blockchain technology</li>
-      </ul>
-    `,
-    postedDate: "May 1, 2025",
-    applicationDeadline: "June 15, 2025",
-    tags: ["Solidity", "Ethereum", "Smart Contracts", "Web3.js"],
-    relatedJobs: [2, 3],
-  },
-  {
-    id: "2",
-    title: "Web3 Product Manager",
-    company: {
-      name: "DeFi Solutions",
-      location: "New York, NY (Hybrid)",
-      logo: "/blockchain-logo.png",
-      about:
-        "DeFi Solutions is a financial technology company building the next generation of decentralized finance products.",
-      website: "https://example.com/defisolutions",
-      size: "100-250 employees",
-      founded: "2019",
-    },
-    type: "Full-time",
-    salary: "$110,000 - $140,000",
-    experience: "3-5 years",
-    description: `<p>Detailed job description for Web3 Product Manager would go here...</p>`,
-    postedDate: "April 28, 2025",
-    applicationDeadline: "May 31, 2025",
-    tags: ["Product Management", "DeFi", "Agile", "Blockchain"],
-    relatedJobs: [1, 3],
-  },
-  {
-    id: "3",
-    title: "NFT Community Manager",
-    company: {
-      name: "ArtBlock",
-      location: "Remote",
-      logo: "/blockchain-logo.png",
-      about: "ArtBlock is a leading NFT marketplace connecting digital artists with collectors worldwide.",
-      website: "https://example.com/artblock",
-      size: "25-50 employees",
-      founded: "2021",
-    },
-    type: "Part-time",
-    salary: "$40,000 - $60,000",
-    experience: "1-3 years",
-    description: `<p>Detailed job description for NFT Community Manager would go here...</p>`,
-    postedDate: "May 5, 2025",
-    applicationDeadline: "June 5, 2025",
-    tags: ["NFTs", "Community Management", "Social Media", "Discord"],
-    relatedJobs: [1, 2],
-  },
-]
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth-provider";
+import AuthDialog from "@/components/auth-dialog";
+import { useTheme } from "next-themes";
+import React from "react";
+import Loading from "@/app/loading";
+import { getAll, getBySlug } from "@/lib/crud";
 
 export default function CareerPage() {
-  const params = useParams()
-  const router = useRouter()
-  const { user } = useAuth()
-  const [job, setJob] = useState<any>(null)
-  const [relatedJobs, setRelatedJobs] = useState<any[]>([])
-  const [showAuthDialog, setShowAuthDialog] = useState(false)
-  const [isApplied, setIsApplied] = useState(false)
-  const [isSaved, setIsSaved] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const { theme } = useTheme()
+  const params = useParams();
+  const rawId = params?.id;
+  const slug: string = Array.isArray(rawId) ? rawId[0] : rawId || "";
+  const router = useRouter();
+  const [user, setUser] = useState("");
 
   useEffect(() => {
-    // Simulate loading data
-    setIsLoading(true)
+    const storedUser = localStorage.getItem("id") || "";
+    setUser(storedUser);
+  }, []);
 
-    setTimeout(() => {
-      const foundJob = careersData.find((j) => j.id === params.id)
+  const [job, setJob] = useState<any>(null);
+  const [relatedJobs, setRelatedJobs] = useState<any[]>([]);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [isApplied, setIsApplied] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { theme } = useTheme();
 
-      if (foundJob) {
-        setJob(foundJob)
+  useEffect(() => {
+    const fetchJob = async () => {
+      try {
+        setIsLoading(true);
 
-        // Get related jobs
-        if (foundJob.relatedJobs && foundJob.relatedJobs.length > 0) {
-          const related = careersData.filter((j) => foundJob.relatedJobs.includes(Number.parseInt(j.id))).slice(0, 2)
-          setRelatedJobs(related)
-        }
-      } else {
-        // Job not found, redirect to careers list
-        router.push("/careers")
+        const fetchedJob = await getBySlug<any>(
+          "careers", // assuming your table name is "careers"
+          "slug",
+          slug,
+          "*" // adjust fields as needed
+        );
+
+        setJob(fetchedJob);
+      } catch (error) {
+        console.error("Failed to fetch job:", error);
+        // If job not found, redirect to careers list
+        router.push("/careers");
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      setIsLoading(false)
-    }, 500)
-  }, [params.id, router])
+    const fetchRelatedJobs = async () => {
+      try {
+        const fetchedJobs = await getAll<any>("careers", "*");
+
+        setRelatedJobs(fetchedJobs);
+      } catch (error) {
+        console.error("Failed to fetch related jobs:", error);
+      }
+    };
+
+    fetchRelatedJobs();
+    fetchJob();
+  }, [slug, router]);
 
   const handleApply = () => {
     if (!user) {
-      setShowAuthDialog(true)
-      return
+      setShowAuthDialog(true);
+      return;
     }
 
-    setIsApplied(!isApplied)
+    setIsApplied(!isApplied);
     // In a real app, you would save the application
-  }
+  };
 
   const handleSaveJob = () => {
     if (!user) {
-      setShowAuthDialog(true)
-      return
+      setShowAuthDialog(true);
+      return;
     }
 
-    setIsSaved(!isSaved)
+    setIsSaved(!isSaved);
     // In a real app, you would save this to the user's profile
-  }
+  };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
-          <p className="text-gray-500">Loading job details...</p>
-        </div>
-      </div>
-    )
+    return <Loading />;
   }
 
-  if (!job) return null
+  if (!job) return null;
 
   return (
     <main>
-      <div className="bg-gradient-to-b from-darker to-dark py-20">
+      <div className="bg-gradient-to-b from-darker to-dark pt-20">
         <div className="container max-w-4xl mx-auto px-4">
           <div className="mb-6">
-            <Link href="/careers" className="text-accent hover:underline flex items-center">
+            <Link
+              href="/careers"
+              className="text-accent hover:underline flex items-center"
+            >
               <i className="fas fa-arrow-left mr-2"></i> Back to Careers
             </Link>
           </div>
@@ -205,8 +109,8 @@ export default function CareerPage() {
           <div className="flex flex-col md:flex-row md:items-center gap-6 mb-8">
             <div className="w-16 h-16 md:w-20 md:h-20 bg-white rounded-lg p-2 flex items-center justify-center">
               <Image
-                src={job.company.logo || "/placeholder.svg"}
-                alt={job.company.name}
+                src={job?.image_url || "/blockhood-logo.png"}
+                alt={job?.company_name || "Company"}
                 width={80}
                 height={80}
                 className="max-w-full max-h-full"
@@ -214,20 +118,22 @@ export default function CareerPage() {
             </div>
 
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">{job.title}</h1>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">
+                {job?.title}
+              </h1>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-400">
-                <div>{job.company.name}</div>
+                <div>{job?.company_name}</div>
                 <div className="flex items-center">
                   <i className="fas fa-map-marker-alt mr-1"></i>
-                  <span>{job.company.location}</span>
+                  <span>{job?.location}</span>
                 </div>
                 <div className="flex items-center">
                   <i className="far fa-clock mr-1"></i>
-                  <span>{job.type}</span>
+                  <span>{job?.job_type}</span>
                 </div>
                 <div className="flex items-center">
                   <i className="fas fa-dollar-sign mr-1"></i>
-                  <span>{job.salary}</span>
+                  <span>{job?.salary_range}</span>
                 </div>
               </div>
             </div>
@@ -242,42 +148,91 @@ export default function CareerPage() {
               <div className="flex items-center gap-3 mb-6">
                 <span
                   className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    theme === "light" ? "bg-primary/10 text-primary" : "bg-primary/20 text-primary-foreground"
+                    theme === "light"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-primary/20 text-primary-foreground"
                   }`}
                 >
-                  {job.type}
+                  {job?.job_type}
                 </span>
-                <span className="text-sm text-gray-500">Posted on {job.postedDate}</span>
+                <span className="text-sm text-gray-500">
+                  Posted on{" "}
+                  {new Date(job?.posted_at).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </span>
               </div>
 
-              <div
-                className={`job-description prose ${
-                  theme === "light" ? "prose-gray" : "prose-invert"
-                } max-w-none mb-10`}
-                dangerouslySetInnerHTML={{ __html: job.description }}
-              ></div>
-
-              <div className="border-t border-b py-6 mb-10 flex flex-wrap gap-2">
-                {job.tags.map((tag: string) => (
-                  <span
-                    key={tag}
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      theme === "light" ? "bg-gray-200 text-gray-800" : "bg-gray-800 text-gray-200"
-                    }`}
-                  >
-                    {tag}
-                  </span>
-                ))}
+              {/* Job Summary */}
+              <div className="mb-6">
+                <h3 className="text-xl font-bold mb-3">Job Summary</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {job?.summary}
+                </p>
               </div>
+
+              {/* Responsibilities */}
+              {job?.responsibilities && (
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold mb-3">Responsibilities</h3>
+                  <div className="prose dark:prose-invert max-w-none">
+                    <pre className="whitespace-pre-wrap font-sans text-sm">
+                      {job.responsibilities.replace(/\\n/g, "\n")}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* Requirements */}
+              {job?.requirements && (
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold mb-3">Requirements</h3>
+                  <div className="prose dark:prose-invert max-w-none">
+                    <pre className="whitespace-pre-wrap font-sans text-sm">
+                      {job.requirements.replace(/\\n/g, "\n")}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* Nice to Have */}
+              {job?.nice_to_have && (
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold mb-3">Nice to Have</h3>
+                  <div className="prose dark:prose-invert max-w-none">
+                    <pre className="whitespace-pre-wrap font-sans text-sm">
+                      {job.nice_to_have.replace(/\\n/g, "\n")}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* Benefits */}
+              {job?.benefits && (
+                <div className="mb-10">
+                  <h3 className="text-xl font-bold mb-3">Benefits</h3>
+                  <div className="prose dark:prose-invert max-w-none">
+                    <pre className="whitespace-pre-wrap font-sans text-sm">
+                      {job.benefits.replace(/\\n/g, "\n")}
+                    </pre>
+                  </div>
+                </div>
+              )}
 
               <div className="flex flex-wrap gap-4 mb-10">
                 <button
                   onClick={handleApply}
                   className={`py-3 px-6 rounded-lg font-medium ${
-                    isApplied ? "bg-green-600 hover:bg-green-700 text-white" : "bg-primary hover:bg-hover text-white"
+                    isApplied
+                      ? "bg-green-600 hover:bg-green-700 text-white"
+                      : "bg-primary hover:bg-hover text-white"
                   } transition-colors`}
                 >
-                  {isApplied ? "Application Submitted" : "Apply for this Position"}
+                  {isApplied
+                    ? "Application Submitted"
+                    : "Apply for this Position"}
                 </button>
 
                 <button
@@ -288,8 +243,8 @@ export default function CareerPage() {
                         ? "bg-gray-100 border-gray-300 text-gray-800"
                         : "bg-gray-700 border-gray-600 text-gray-200"
                       : theme === "light"
-                        ? "bg-white border-gray-300 text-gray-800 hover:bg-gray-50"
-                        : "bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700"
+                      ? "bg-white border-gray-300 text-gray-800 hover:bg-gray-50"
+                      : "bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700"
                   } transition-colors`}
                 >
                   <i className={`${isSaved ? "fas" : "far"} fa-bookmark`}></i>
@@ -298,58 +253,86 @@ export default function CareerPage() {
               </div>
             </div>
 
-            {relatedJobs.length > 0 && (
+            {/* Related Jobs */}
+            {relatedJobs?.filter(
+              (relatedJob) =>
+                relatedJob?.job_type === job?.job_type &&
+                relatedJob?.id !== job?.id
+            ).length > 0 && (
               <div className="mb-10">
                 <h3 className="text-2xl font-bold mb-6">Similar Jobs</h3>
                 <div className="space-y-4">
-                  {relatedJobs.map((relatedJob) => (
-                    <div
-                      key={relatedJob.id}
-                      className={`p-6 rounded-xl border ${
-                        theme === "light" ? "bg-white border-gray-200" : "bg-gray-800 border-gray-700"
-                      }`}
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 bg-white rounded-lg p-1 flex-shrink-0 flex items-center justify-center">
-                          <Image
-                            src={relatedJob.company.logo || "/placeholder.svg"}
-                            alt={relatedJob.company.name}
-                            width={40}
-                            height={40}
-                          />
-                        </div>
-                        <div className="flex-grow">
-                          <h4 className="font-bold mb-1">{relatedJob.title}</h4>
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500 mb-3">
-                            <span>{relatedJob.company.name}</span>
-                            <span>{relatedJob.company.location}</span>
-                            <span>{relatedJob.type}</span>
+                  {relatedJobs
+                    .filter(
+                      (relatedJob) =>
+                        relatedJob?.job_type === job?.job_type &&
+                        relatedJob?.id !== job?.id
+                    )
+                    .slice(0, 2) // Limit to 2 related jobs
+                    .map((relatedJob) => (
+                      <div
+                        key={relatedJob?.id}
+                        className={`p-6 rounded-xl border ${
+                          theme === "light"
+                            ? "bg-white border-gray-200"
+                            : "bg-gray-800 border-gray-700"
+                        }`}
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="w-12 h-12 bg-white rounded-lg p-1 flex-shrink-0 flex items-center justify-center">
+                            <Image
+                              src={
+                                relatedJob?.image_url || "/blockhood-logo.png"
+                              }
+                              alt={relatedJob?.company_name || "Company"}
+                              width={40}
+                              height={40}
+                            />
                           </div>
-                          <div className="flex justify-between items-center">
-                            <div className="text-sm font-medium">{relatedJob.salary}</div>
-                            <Link href={`/careers/${relatedJob.id}`} className="text-accent hover:underline text-sm">
-                              View Job
-                            </Link>
+                          <div className="flex-grow">
+                            <h4 className="font-bold mb-1">
+                              {relatedJob?.title}
+                            </h4>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500 mb-3">
+                              <span>{relatedJob?.company_name}</span>
+                              <span>{relatedJob?.location}</span>
+                              <span>{relatedJob?.job_type}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <div className="text-sm font-medium">
+                                {relatedJob?.salary_range}
+                              </div>
+                              <Link
+                                href={`/careers/${relatedJob?.slug}`}
+                                className="text-accent hover:underline text-sm"
+                              >
+                                View Job
+                              </Link>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
             )}
           </div>
 
+          {/* Sidebar */}
           <div className="md:col-span-1">
             <div
               className={`sticky top-24 rounded-xl border p-6 ${
-                theme === "light" ? "bg-white border-gray-200 shadow-sm" : "bg-gray-800 border-gray-700"
+                theme === "light"
+                  ? "bg-white border-gray-200 shadow-sm"
+                  : "bg-gray-800 border-gray-700"
               }`}
             >
-              <h3 className="text-xl font-bold mb-4">About {job.company.name}</h3>
+              <h3 className="text-xl font-bold mb-4">
+                About {job?.company_name}
+              </h3>
 
               <div className="space-y-4 mb-6">
-                <p className="text-sm text-gray-500">{job.company.about}</p>
+                <p className="text-sm text-gray-500">{job?.about}</p>
 
                 <div className="flex items-start">
                   <div className="flex-shrink-0 w-5 mt-0.5 mr-3 text-gray-400">
@@ -357,7 +340,7 @@ export default function CareerPage() {
                   </div>
                   <div>
                     <a
-                      href={job.company.website}
+                      href={job?.company_website}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-accent hover:underline text-sm"
@@ -371,14 +354,18 @@ export default function CareerPage() {
                   <div className="flex-shrink-0 w-5 mt-0.5 mr-3 text-gray-400">
                     <i className="fas fa-users"></i>
                   </div>
-                  <div className="text-sm text-gray-500">{job.company.size}</div>
+                  <div className="text-sm text-gray-500">
+                    {job?.company_size}
+                  </div>
                 </div>
 
                 <div className="flex items-start">
                   <div className="flex-shrink-0 w-5 mt-0.5 mr-3 text-gray-400">
                     <i className="fas fa-calendar-alt"></i>
                   </div>
-                  <div className="text-sm text-gray-500">Founded in {job.company.founded}</div>
+                  <div className="text-sm text-gray-500">
+                    Founded in {job?.company_founded}
+                  </div>
                 </div>
               </div>
 
@@ -392,7 +379,9 @@ export default function CareerPage() {
                     </div>
                     <div>
                       <div className="text-sm font-medium">Job Type</div>
-                      <div className="text-sm text-gray-500">{job.type}</div>
+                      <div className="text-sm text-gray-500">
+                        {job?.job_type}
+                      </div>
                     </div>
                   </div>
 
@@ -402,7 +391,9 @@ export default function CareerPage() {
                     </div>
                     <div>
                       <div className="text-sm font-medium">Salary Range</div>
-                      <div className="text-sm text-gray-500">{job.salary}</div>
+                      <div className="text-sm text-gray-500">
+                        {job?.salary_range}
+                      </div>
                     </div>
                   </div>
 
@@ -412,7 +403,9 @@ export default function CareerPage() {
                     </div>
                     <div>
                       <div className="text-sm font-medium">Experience</div>
-                      <div className="text-sm text-gray-500">{job.experience}</div>
+                      <div className="text-sm text-gray-500">
+                        {job?.experience}
+                      </div>
                     </div>
                   </div>
 
@@ -421,8 +414,16 @@ export default function CareerPage() {
                       <i className="far fa-calendar-check"></i>
                     </div>
                     <div>
-                      <div className="text-sm font-medium">Application Deadline</div>
-                      <div className="text-sm text-gray-500">{job.applicationDeadline}</div>
+                      <div className="text-sm font-medium">
+                        Application Deadline
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {new Date(job?.deadline).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -438,7 +439,9 @@ export default function CareerPage() {
         </div>
       </div>
 
-      {showAuthDialog && <AuthDialog onClose={() => setShowAuthDialog(false)} />}
+      {showAuthDialog && (
+        <AuthDialog onClose={() => setShowAuthDialog(false)} />
+      )}
     </main>
-  )
+  );
 }
