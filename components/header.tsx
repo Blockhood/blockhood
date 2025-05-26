@@ -99,6 +99,13 @@ export default function Header() {
                 Careers
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent group-hover:w-full transition-all duration-300"></span>
               </Link>
+              <Link
+                href="/ecosystems"
+                className="text-light dark:text-light hover:text-accent dark:hover:text-accent transition-colors relative group"
+              >
+                Ecosystems
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent group-hover:w-full transition-all duration-300"></span>
+              </Link>
             </div>
 
             <div className="flex items-center md:gap-4">
@@ -145,7 +152,7 @@ export default function Header() {
               ) : (
                 <button
                   onClick={() => setShowAuthDialog(true)}
-                  className="md:cta-button md:cta-secondary flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:shadow-lg hover:-translate-y-0.5"
+                  className="cta-button cta-secondary flex items-center gap-2 px-4 py-2 rounded-lg transition-all hover:shadow-lg hover:-translate-y-0.5"
                 >
                   <span className="hidden md:inline">Join Us</span>
                   <span className="md:hidden inline">
