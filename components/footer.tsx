@@ -17,7 +17,11 @@ export default function Footer() {
           Building a better Web3 future, together.
         </p>
         <div className="social-links">
-          <a href="#" className="social-link" aria-label="Twitter">
+          <a
+            href="https://x.com/blockhoodid"
+            className="social-link"
+            aria-label="Twitter"
+          >
             <i className="fab fa-twitter"></i>
           </a>
           <a

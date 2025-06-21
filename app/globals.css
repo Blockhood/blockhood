@@ -411,25 +411,23 @@ nav {
 }
 
 /* Our Team Section Styles */
-.team-section {
-  padding: 100px 0;
-  position: relative;
-  background: linear-gradient(
-    180deg,
-    var(--darker) 0%,
-    var(--dark) 50%,
-    var(--darker) 100%
-  );
+.team-grid {
+  display: flex; /* Ubah dari grid ke flex untuk scroll horizontal */
+  gap: 20px; /* Tetap sama: jarak antar card */
+  margin-top: 60px;
+  overflow-x: auto; /* Aktifkan scroll horizontal */
+  scroll-behavior: smooth; /* Scroll smooth */
+  -ms-overflow-style: none; /* IE & Edge lama */
+  scrollbar-width: none; /* Firefox */
 }
 
-.team-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 30px;
-  margin-top: 60px;
+.team-grid::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
 }
 
 .team-member-card {
+  flex: 0 0 auto; /* Supaya ukuran card tetap */
+  width: 250px; /* Atur lebar card sama dengan grid sebelumnya */
   background-color: rgba(255, 255, 255, 0.03);
   border-radius: 15px;
   padding: 30px;
