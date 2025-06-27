@@ -152,7 +152,7 @@ export default function Header() {
               ) : (
                 <button
                   onClick={() => setShowAuthDialog(true)}
-                  className="flex items-center gap-2 rounded-xl text-[1rem] font-medium transition-all duration-300 px-5 py-2.5 md:inline-flex md:border md:border-white md:bg-transparent md:text-white md:hover:bg-white md:hover:text-black md:hover:-translate-y-0.5 md:hover:shadow-lg"
+                  className="flex items-center gap-2 rounded-xl text-[1rem] font-medium transition-all duration-300 px-5 py-2.5 md:inline-flex md:border dark:md:border-white md:bg-transparent dark:md:text-white md:hover:bg-white md:hover:text-black dark:md:hover:text-black md:hover:-translate-y-0.5 md:hover:shadow-lg"
                 >
                   <span className="hidden md:inline">Join Us</span>
                   <span className="md:hidden inline">

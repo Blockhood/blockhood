@@ -32,7 +32,13 @@ export default function ApplicationCard({ application }: ApplicationCardProps) {
 
   return (
     <Link target="_blank" href={"https://pomohood.vercel.app/"}>
-      <div className="cta-secondary bg-dark border border-primary/30 rounded-xl p-6 hover:border-primary/60 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10">
+      <div
+        className="bg-dark border border-primary/30 rounded-xl p-6 
+  hover:border-primary/60 
+  transition-all duration-300 
+  hover:shadow-lg hover:shadow-primary/10 
+  transform hover:-translate-y-1"
+      >
         {/* Icon */}
         <div className="flex justify-center mb-4">{application.icon}</div>
 

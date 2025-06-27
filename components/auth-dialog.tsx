@@ -98,9 +98,9 @@ export default function AuthDialog({ onClose }: { onClose: () => void }) {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        // options: {
-        //   redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
-        // },
+        options: {
+          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+        },
       });
       if (error) throw error;
     } catch (err) {
