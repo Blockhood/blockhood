@@ -10,11 +10,13 @@ import SignInPrompt from "@/components/sign-in";
 import { getAll } from "@/lib/crud";
 import { Guide } from "@/types/guides";
 import Loading from "../loading";
+import { useRouter } from "next/navigation";
 
 export default function GuidesPage() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [user, setUser] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("id") || "";
@@ -163,6 +165,8 @@ export default function GuidesPage() {
                     </Link>
                     <div className="flex gap-2">
                       <button
+                        type="button"
+                        // onClick={() => router.push(`/guides/${guide.slug}`)}
                         onClick={() => handleGuideAction("share")}
                         className="text-gray-400 hover:text-accent"
                         title="Share"

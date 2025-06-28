@@ -107,12 +107,12 @@ export default function Header() {
               </Link>
             </div>
 
-            <div className="flex items-center md:gap-4">
+            <div className="flex items-center gap-3 md:gap-4">
               <ThemeToggle />
 
               {user ? (
                 <div className="relative group">
-                  <button className="flex items-center gap-2 rounded-2xl px-3 py-2 border border-gray-700 bg-darker hover:bg-gray-800 transition-colors">
+                  <button className="flex items-center gap-2 rounded-2xl border border-gray-700 bg-darker hover:bg-gray-800 transition-colors">
                     <div className="w-8 h-8 rounded-full overflow-hidden">
                       <Image
                         src={"/default_pp.jpg"}
@@ -151,12 +151,33 @@ export default function Header() {
               ) : (
                 <button
                   onClick={() => {
-                    if (localStorage.getItem("id")) {
+                    const id = localStorage.getItem("id");
+
+                    if (id) {
                       setUser(true);
                       setShowAuthDialog(false);
-                    } else {
-                      setShowAuthDialog(true);
+                      return;
                     }
+
+                    const token = localStorage.getItem(
+                      "sb-sbtscaztdlyqijvksdmo-auth-token"
+                    );
+
+                    if (token) {
+                      try {
+                        const parsed = JSON.parse(token);
+                        if (parsed?.user?.id) {
+                          localStorage.setItem("id", parsed.user.id);
+                          setUser(true);
+                          setShowAuthDialog(false);
+                          return;
+                        }
+                      } catch (err) {
+                        console.error("Failed to parse auth token:", err);
+                      }
+                    }
+
+                    setShowAuthDialog(true);
                   }}
                   className="flex items-center gap-2 rounded-xl text-[1rem] font-medium transition-all duration-300 px-5 py-2.5 md:inline-flex md:border dark:md:border-white md:bg-transparent dark:md:text-white md:hover:bg-white md:hover:text-black dark:md:hover:text-black md:hover:-translate-y-0.5 md:hover:shadow-lg"
                 >

@@ -72,13 +72,10 @@ export default function EventCard({ event }: EventCardProps) {
         <p className="event-description">{event.summary}</p>
         <div className="event-footer">
           <div className="event-host">
-            <div className="event-host-avatar">
-              <Image
-                src="/default_pp.jpg"
-                alt={event.user.full_name}
-                width={35}
-                height={35}
-              />
+            <div className="w-8 h-8 p-3 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center">
+              <span className="text-white font-medium">
+                {event?.user?.full_name?.charAt(0) || "U"}
+              </span>
             </div>
             <span className="event-host-name">
               Hosted by {event.user.full_name}

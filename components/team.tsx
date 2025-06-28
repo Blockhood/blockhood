@@ -3,20 +3,20 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 
 export default function Team() {
-  const teamsContainerRef = useRef<HTMLDivElement>(null);
+  const partnersContainerRef = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const teamsContainer = teamsContainerRef.current;
+    const partnersContainer = partnersContainerRef.current;
     const carousel = carouselRef.current;
 
-    if (!teamsContainer || !carousel) return;
+    if (!partnersContainer || !carousel) return;
 
     const originalLogos = Array.from(carousel.children);
     const count = originalLogos.length;
 
     if (count > 0) {
-      teamsContainer.classList.add("has-fades");
+      partnersContainer.classList.add("has-fades");
     }
 
     if (count >= 5) {
@@ -156,24 +156,27 @@ export default function Team() {
         if (momentumID) clearInterval(momentumID);
       };
     } else if (count > 0) {
-      // Less than 5 teams: center them
+      // Less than 5 partners: center them
       carousel.style.justifyContent = "center";
     } else {
-      // No teams, hide fades
-      teamsContainer.classList.remove("has-fades");
+      // No partners, hide fades
+      partnersContainer.classList.remove("has-fades");
     }
   }, []);
   return (
     <section className="team-section" id="team">
       <div className="container">
         <h2 className="section-title reveal">Meet Our Team</h2>
-        <div className="teams-container has-fades" ref={teamsContainerRef}>
+        <div
+          className="partners-container has-fades"
+          ref={partnersContainerRef}
+        >
           <div
-            className="teams-carousel reveal"
-            id="teamsCarousel"
+            className="partners-carousel reveal"
+            id="partnersCarousel"
             ref={carouselRef}
           >
-            <div className="team-member-card reveal">
+            <div className="team-member-card reveal transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 transform hover:-translate-y-1">
               <Image
                 src="/images/founder.jpeg"
                 alt="Wisearich.vl"
@@ -204,7 +207,11 @@ export default function Team() {
                 </a>
               </div>
             </div>
-            <div className="team-member-card reveal">
+            <div
+              className="team-member-card reveal transition-all duration-300 
+  hover:shadow-lg hover:shadow-primary/10 
+  transform hover:-translate-y-1"
+            >
               <Image
                 src="/images/Nesctfox.jpeg"
                 alt="Nesctfox"
@@ -235,7 +242,11 @@ export default function Team() {
                 </a>
               </div>
             </div>
-            <div className="team-member-card reveal">
+            <div
+              className="team-member-card reveal transition-all duration-300 
+  hover:shadow-lg hover:shadow-primary/10 
+  transform hover:-translate-y-1"
+            >
               <Image
                 src="/images/BAGAZZ.jpeg"
                 alt="BAGAZZ"
@@ -266,7 +277,11 @@ export default function Team() {
                 </a>
               </div>
             </div>
-            <div className="team-member-card reveal">
+            <div
+              className="team-member-card reveal transition-all duration-300 
+  hover:shadow-lg hover:shadow-primary/10 
+  transform hover:-translate-y-1"
+            >
               <Image
                 src="/images/Belugaa.jpeg"
                 alt="Belugaa"
@@ -297,7 +312,11 @@ export default function Team() {
                 </a>
               </div>
             </div>
-            <div className="team-member-card reveal">
+            <div
+              className="team-member-card reveal transition-all duration-300 
+  hover:shadow-lg hover:shadow-primary/10 
+  transform hover:-translate-y-1"
+            >
               <Image
                 src="/images/gebeonchain.jpeg"
                 alt="Belugaa"
@@ -328,7 +347,11 @@ export default function Team() {
                 </a>
               </div>
             </div>
-            <div className="team-member-card reveal">
+            <div
+              className="team-member-card reveal transition-all duration-300 
+  hover:shadow-lg hover:shadow-primary/10 
+  transform hover:-translate-y-1"
+            >
               <Image
                 src="/images/Vandebenn.jpeg"
                 alt="Belugaa"
