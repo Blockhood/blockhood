@@ -17,13 +17,14 @@ export async function getAll<T>(
   return data as T[];
 }
 
-export async function getById<T>(table: string, id: string): Promise<T> {
-  const { data, error } = await supabase
+export async function getById<T>(table: string, id: string) {
+  const { data, error, status } = await supabase
     .from(table)
     .select("*")
     .eq("id", id)
-    .single();
-  if (error) throw error;
+    .maybeSingle();
+
+  if (error && status !== 406) throw error;
   return data;
 }
 

@@ -17,11 +17,12 @@ export default function Header() {
 
   useEffect(() => {
     const raw = localStorage.getItem("sb-sbtscaztdlyqijvksdmo-auth-token");
+    const fallbackId = localStorage.getItem("id") || user;
 
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
-        const userId = parsed?.user?.id;
+        const userId = parsed?.user?.id || fallbackId;
 
         if (userId) {
           setUser(userId);
@@ -37,8 +38,6 @@ export default function Header() {
         return;
       }
     }
-
-    const fallbackId = localStorage.getItem("id") || user;
 
     if (fallbackId) {
       setUser(fallbackId);
@@ -151,7 +150,14 @@ export default function Header() {
                 </div>
               ) : (
                 <button
-                  onClick={() => setShowAuthDialog(true)}
+                  onClick={() => {
+                    if (localStorage.getItem("id")) {
+                      setUser(true);
+                      setShowAuthDialog(false);
+                    } else {
+                      setShowAuthDialog(true);
+                    }
+                  }}
                   className="flex items-center gap-2 rounded-xl text-[1rem] font-medium transition-all duration-300 px-5 py-2.5 md:inline-flex md:border dark:md:border-white md:bg-transparent dark:md:text-white md:hover:bg-white md:hover:text-black dark:md:hover:text-black md:hover:-translate-y-0.5 md:hover:shadow-lg"
                 >
                   <span className="hidden md:inline">Join Us</span>

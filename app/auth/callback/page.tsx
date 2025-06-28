@@ -25,27 +25,26 @@ export default function AuthCallbackHandler() {
       }
 
       try {
-        await getById("users", user.id); // cek user
-      } catch {
-        const newUser = {
-          id: user.id,
-          email: user.email,
-          full_name: user.user_metadata?.full_name || user.email,
-          created_at: new Date().toISOString(),
-        };
-        console.log(newUser);
+        const existingUser = await getById("users", user.id);
+        if (!existingUser) {
+          const newUser = {
+            id: user.id,
+            email: user.email,
+            full_name: user.user_metadata?.full_name || user.email,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
 
-        try {
-          await create("users", newUser); // buat user jika tidak ditemukan
-        } catch {
-          setStatus("error");
-          return;
+          await create("users", newUser);
         }
-      }
 
-      localStorage.setItem("id", user.id);
-      setStatus("success");
-      setTimeout(() => router.push("/"), 1000);
+        localStorage.setItem("id", user.id);
+        setStatus("success");
+        setTimeout(() => router.push("/"), 1000);
+      } catch (e) {
+        console.error("Something went wrong", e);
+        setStatus("error");
+      }
     };
 
     checkAndCreateUser();
